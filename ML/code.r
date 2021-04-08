@@ -1,3 +1,5 @@
+#---- 
+
 # Machine Learning Part (a)∗∗: Present the data visually using box-and-whisker plots with
 # a distinction for churn. Comment on the data in the context of the problem.
 library(readr)
@@ -110,21 +112,29 @@ churn_data %>% ggplot() +
 #*Unfortunately, we don't have access to any other data hence we can only speculate that 
 #*perhaps there are some issues with the provider's network. 
 
+#----
 
-# Time to load 
+# Machine Learning Part (b)∗:
 
-# Machine Learning Part (b)∗
-# : Create a training set consisting of 350 randomly chosen
+
+# Create a training set consisting of 350 randomly chosen
 # data points and a test set consisting of the remaining 150 data points.
 
-# set.seed(1) # to make the results reproducible
-# def.subset <- sample(10000, 5000) # we randomly choose 5000 numbers out of 10000
-# train.X.sub <- train.X[-def.subset, ] # predictors for the training set
-# cl.sub <- cl[-def.subset] # classes for the training set
-# test.X <- train.X[def.subset, ] # predictors for the test set
-# test.cl <- cl[def.subset]
+set.seed(1) # to make the results reproducible
+num_subset <- sample(length(churn), 350) # randomly choose 350 numbers out of 500
 
-# Machine Learning Part (c)∗∗∗: Using the training data set apply the K nearest neighbours
+# subsetting our dataset, predictors and classes together in dataframes
+
+train_churn <- churn_data[num_subset, ] # training set = 350 random records
+test_churn <- churn_data[-num_subset, ] # test set = remaining 150 records
+
+
+#----
+
+# Machine Learning Part (c)∗∗∗:
+
+
+# Using the training data set apply the K nearest neighbours
 # method to construct a classifier to predict churn based on the four available predictors. Find
 # the optimal K using leave-one-out cross-validation for the training data set.
 # Calculate the test error for the classification rule obtained for the optimal K.
