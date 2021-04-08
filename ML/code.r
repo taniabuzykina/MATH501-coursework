@@ -62,6 +62,56 @@ churn_data %>% ggplot() +
        x = "Switched to a new provider",
        color = "Switched")
 
+# COMMENTARY
+
+# Even though the average waiting time for a customer service operator is 
+# similar in both cases, overall the majority of of customers who switched to a 
+# different operator had to wait longer than the average and the customers who
+# haven't changed their provider. We can assume that the time spent by a 
+# customer on a call while they're waiting for a customer service operator to 
+# attend may impact their decision to switch to another operator although the 
+# influence seems to be less significant compared to time to load a webpage.
+
+# 4 boxplot with the number of times a customer contacted the company
+# via a phone call against an indicator whether a customer 
+# switched to a different provider
+
+churn_data %>% ggplot() + 
+ geom_boxplot(aes(x = churn, y = enqcount, color = churn)) +
+ labs (y = "The number of times a customer contacted the company", 
+       x = "Switched to a new provider",
+       color = "Switched")
+
+# COMMENTARY
+
+# we can observe that in average the customers that switched to a different 
+# operator contacted the company via a phone call 1 time more often than others
+# The biggest number of contact attempts is 2 calls more than of the customers
+# who haven't changed their providers. Needs to be mentioned that some of 
+# the customers who switched didn't contact the company even once. On the contrary
+# minority of the customers who haven't changed their provider also have more 
+# than 5 and even 6 calls. Still it will be safe to assume that the number of calls
+# impacts the customers' decision to choose a different operator but its importance
+# is smaller the time to load a webpage.
+
+
+#*CONCLUSION
+#*
+#*Out of all the 4 factors that can possibly influence the 'churn' variable 
+#*time to load the webpage (which subsequently leads to the downlink speed) is the 
+#*most important one. Average phone call customer service waiting time doesn't 
+#*differ drastically but still is higher for customers who chose 
+#*different providers hence we could conclude that this aspect also plays its part in 
+#*the customers' decision as well as the number of phone calls to the company.
+#*The most suspicious variable is the upload speed - for those clients who changed
+#*their providers the uplink speed was actually higher but the downlink speed was lower
+#*(comparing to the customers who didn't change their provider) while normaly 
+#*the opposite should be the case (unless we're talking about 5G). 
+#*Unfortunately, we don't have access to any other data hence we can only speculate that 
+#*perhaps there are some issues with the provider's network. 
+
+
+# Time to load 
 
 # Machine Learning Part (b)∗
 # : Create a training set consisting of 350 randomly chosen
