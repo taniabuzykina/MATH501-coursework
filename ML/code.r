@@ -124,6 +124,9 @@ churn_data %>% ggplot() +
 set.seed(1) # to make the results reproducible
 num_subset <- sample(length(churn), 350) # randomly choose 350 numbers out of 500
 
+# useless chunks of code
+#----
+
 # subsetting our dataset, predictors and classes together in dataframes
 
 # train_churn <- churn_data[num_subset, ] # training set = 350 random records
@@ -142,13 +145,23 @@ num_subset <- sample(length(churn), 350) # randomly choose 350 numbers out of 50
 # train_churn <- churn_data[num_subset, ] # training set = 350 random records
 # test_churn <- churn_data[-num_subset, ] # test set = remaining 150 records
 
-X <- cbind(upload, webget, enqcount, callwait)
+#----
+
+# actually working code:
+
+#* binding the attached variables of churn_data helps us get a matrix instead of dataframe
+#* because KNN function doesn't like it when it's dataframe
+
+
+X <- cbind(upload, webget, enqcount, callwait) 
 Y <- churn
 
-train.X <- X[num_subset, ]
+# dividing our data into training and testing matrices
+
+train.X <- X[num_subset, ] # 350 records here
 train.Y <- Y[num_subset]
 
-test.X <- X[-num_subset, ]
+test.X <- X[-num_subset, ] # 350 records here
 test.Y <- Y[-num_subset]
 
 
@@ -169,8 +182,67 @@ def.knn <- knn(train = train.X, test = test.X, cl = train.Y, k = k) # yep that's
 table(def.knn, test.Y)
 tab <- table(def.knn, test.Y)
 
-error <- (tab[1,2] + tab[2,1]) / sum(tab)
+# calculating the error using falsely predicted churn values
+
+error <- (tab[1,2] + tab[2,1]) / sum(tab) 
 error
 
 #* Find the optimal K using leave-one-out cross-validation for the training data set.
 #* Calculate the test error for the classification rule obtained for the optimal K.
+# 
+# n <- nrow(Carseats) # the number of data points in the data set Carseats
+# cv.predictions <- rep('Yes', n)
+# for(i in 1:n) { # start a loop over all data points
+#         # Fit a classification tree using all data except one data point.
+#         tree.fit <- tree(High ~ . - Sales, data = Carseats[-i, ])
+#         # Make a prediction for the excluded data point.
+#         cv.predictions[i] <- predict(tree.fit, newdata = Carseats[i,], type = "class")
+# }
+
+n <- nrow(train.X)
+
+error <- 0
+
+
+#* option 1: forming a 1-record test set along the way in the loop and then 
+#* finding an average error from all the test errors produced by KNN in the loop
+#* do the same thing for like n Ks and then choose K with the smallest average error
+
+
+leave.KNN <- function(k){
+        
+        for(i in 1:n){
+                temp.train.X <- train.X[-i,]
+                temp.train.Y <- train.Y[-i]
+                temp.test.X <- train.X[i,]
+                temp.test.Y <- train.Y[i]
+                temp.knn <- knn(train = temp.train.X, test = temp.test.X, cl = temp.train.Y, k = k)
+                temp.tab <- tab <- table(temp.knn, temp.test.Y)
+                error <- error + (tab[1,2] + tab[2,1]) / sum(tab)
+        }
+        error <- error/n
+     return(error)   
+}
+
+errors <- rep(0, 30)
+for (j in 1:30) errors[j] <- leave.KNN(j)
+plot(errors, xlab="K", ylab = "Test error")
+
+#* option 2: let's try just normal test set LOL
+#* 
+
+normal.KNN <- function(k){
+        def.knn <- knn(train = train.X, test = test.X, cl = train.Y, k = k) # yep that's it
+        
+        tab <- table(def.knn, test.Y)
+        
+        
+        error <- (tab[1,2] + tab[2,1]) / sum(tab) 
+        
+}
+
+errors2 <- rep(0, 30)
+for (j in 1:30) errors2[j] <- normal.KNN(j)
+plot(errors2, xlab="K", ylab = "Test error")
+
+
