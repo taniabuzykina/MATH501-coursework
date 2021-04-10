@@ -5,6 +5,7 @@
 library(readr)
 library(ggplot2)
 library(tidyverse)
+library(class) #library for KNN
 
 #reading the data into a dataframe
 data_path <- "./data/churndata.txt"
@@ -125,18 +126,31 @@ num_subset <- sample(length(churn), 350) # randomly choose 350 numbers out of 50
 
 # subsetting our dataset, predictors and classes together in dataframes
 
-train_churn <- churn_data[num_subset, ] # training set = 350 random records
-test_churn <- churn_data[-num_subset, ] # test set = remaining 150 records
+# train_churn <- churn_data[num_subset, ] # training set = 350 random records
+# test_churn <- churn_data[-num_subset, ] # test set = remaining 150 records
+# 
+# # separating predictors and classifiers for test and train sets
+# 
+# train.X <- train_churn[-5]
+# train.Y <- train_churn[5]
+# 
+# test.X <- test_churn[-5]
+# test.Y <- test_churn[5]
+# 
+# rm(train_churn, test_churn) #cleaning up
 
-# separating predictors and classifiers for test and train sets
+# train_churn <- churn_data[num_subset, ] # training set = 350 random records
+# test_churn <- churn_data[-num_subset, ] # test set = remaining 150 records
 
-train.X <- train_churn[-5]
-train.Y <- train_churn[5]
+X <- cbind(upload, webget, enqcount, callwait)
+Y <- churn
 
-test.X <- test_churn[-5]
-test.Y <- test_churn[5]
+train.X <- X[num_subset, ]
+train.Y <- Y[num_subset]
 
-rm(train_churn, test_churn) #cleaning up
+test.X <- X[-num_subset, ]
+test.Y <- Y[-num_subset]
+
 
 #----
 
@@ -147,7 +161,16 @@ rm(train_churn, test_churn) #cleaning up
 #* method to construct a classifier to predict churn based on the four available 
 #* predictors. 
 
+k <- 3 #setting K=3 just to try it out at first
 
+# below is our KNN
+def.knn <- knn(train = train.X, test = test.X, cl = train.Y, k = k) # yep that's it
+
+table(def.knn, test.Y)
+tab <- table(def.knn, test.Y)
+
+error <- (tab[1,2] + tab[2,1]) / sum(tab)
+error
 
 #* Find the optimal K using leave-one-out cross-validation for the training data set.
 #* Calculate the test error for the classification rule obtained for the optimal K.
