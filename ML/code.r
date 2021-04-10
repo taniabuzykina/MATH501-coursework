@@ -128,13 +128,26 @@ num_subset <- sample(length(churn), 350) # randomly choose 350 numbers out of 50
 train_churn <- churn_data[num_subset, ] # training set = 350 random records
 test_churn <- churn_data[-num_subset, ] # test set = remaining 150 records
 
+# separating predictors and classifiers for test and train sets
+
+train.X <- train_churn[-5]
+train.Y <- train_churn[5]
+
+test.X <- test_churn[-5]
+test.Y <- test_churn[5]
+
+rm(train_churn, test_churn) #cleaning up
 
 #----
 
 # Machine Learning Part (c)∗∗∗:
 
 
-# Using the training data set apply the K nearest neighbours
-# method to construct a classifier to predict churn based on the four available predictors. Find
-# the optimal K using leave-one-out cross-validation for the training data set.
-# Calculate the test error for the classification rule obtained for the optimal K.
+#* Using the training data set apply the K nearest neighbours
+#* method to construct a classifier to predict churn based on the four available 
+#* predictors. 
+
+
+
+#* Find the optimal K using leave-one-out cross-validation for the training data set.
+#* Calculate the test error for the classification rule obtained for the optimal K.
