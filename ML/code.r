@@ -117,38 +117,14 @@ churn_data %>% ggplot() +
 
 # Machine Learning Part (b)∗:
 
-
+#********
 # Create a training set consisting of 350 randomly chosen
 # data points and a test set consisting of the remaining 150 data points.
+#********
+
 
 set.seed(1) # to make the results reproducible
 num_subset <- sample(length(churn), 350) # randomly choose 350 numbers out of 500
-
-# useless chunks of code
-
-#----
-
-# subsetting our dataset, predictors and classes together in dataframes
-
-# train_churn <- churn_data[num_subset, ] # training set = 350 random records
-# test_churn <- churn_data[-num_subset, ] # test set = remaining 150 records
-# 
-# # separating predictors and classifiers for test and train sets
-# 
-# train.X <- train_churn[-5]
-# train.Y <- train_churn[5]
-# 
-# test.X <- test_churn[-5]
-# test.Y <- test_churn[5]
-# 
-# rm(train_churn, test_churn) #cleaning up
-
-# train_churn <- churn_data[num_subset, ] # training set = 350 random records
-# test_churn <- churn_data[-num_subset, ] # test set = remaining 150 records
-
-#----
-
-# actually working code:
 
 #* binding the attached variables of churn_data helps us get a matrix instead of dataframe
 #* because KNN function doesn't like it when it's dataframe
@@ -175,35 +151,15 @@ test.Y <- Y[-num_subset]
 #* method to construct a classifier to predict churn based on the four available 
 #* predictors. 
 
-k <- 3 #setting K=3 just to try it out at first
-
-# below is our KNN
-def.knn <- knn(train = train.X, test = test.X, cl = train.Y, k = k) # yep that's it
-
-table(def.knn, test.Y)
-tab <- table(def.knn, test.Y)
-
-# calculating the error using falsely predicted churn values
-
-error <- (tab[1,2] + tab[2,1]) / sum(tab) 
-error
-
+#********
 #* Find the optimal K using leave-one-out cross-validation for the training data set.
-#* Calculate the test error for the classification rule obtained for the optimal K.
-# 
+#********
 
 
 n <- nrow(train.X)
 
-error <- 0
-
-
-#* option 1: forming a 1-record test set along the way in the loop and then 
-#* finding an average error from all the test errors produced by KNN in the loop
-#* do the same thing for like n Ks and then choose K with the smallest average error
-
-
 leave.KNN <- function(k){
+        error <- 0
         
         for(i in 1:n){
                 
@@ -217,28 +173,43 @@ leave.KNN <- function(k){
                 error <- error + (tab[1,2] + tab[2,1]) / sum(tab)
         }
         
-        error <- error/n
-     return(error)   
+     return(error/n)   
 }
 
-errors <- rep(0, 30)
+errors <- rep(0, 30) #trying with K from 1 to 50
 for (j in 1:30) errors[j] <- leave.KNN(j)
+# plotting errors
 plot(errors, xlab="K", ylab = "Test error")
 
-optimal.K <- row_number(min(errors))
-#* option 2: let's try just normal test set LOL
-#* 
+#finding optimal K as an index of the first smallest error value
+optim.K <- which.min(errors)
+optim.K
+min(errors)
+#********
+#* Calculate the test error for the classification rule obtained for the optimal K.
+#********
 
-normal.KNN <- function(k){
-        
-        def.knn <- knn(train = train.X, test = test.X, cl = train.Y, k = k) # yep that's it
-        tab <- table(def.knn, test.Y)
-        error <- (tab[1,2] + tab[2,1]) / sum(tab) 
-        
-}
+# below is our KNN
+def.knn <- knn(train = train.X, test = test.X, cl = train.Y, k = optim.K) # yep that's it
 
-errors2 <- rep(0, 30)
-for (j in 1:30) errors2[j] <- normal.KNN(j)
-plot(errors2, xlab="K", ylab = "Test error")
+table(def.knn, test.Y)
+tab <- table(def.knn, test.Y)
+
+# calculating the error using falsely predicted churn values
+error <- (tab[1,2] + tab[2,1]) / sum(tab) 
+error
+
+#* Machine Learning Part (d)∗∗:
+#* Using the training data set apply the random forest (bagging) method to 
+#* construct a classifier to predict churn based on the four available predictors. 
+#* Using the obtained random forest, comment on the importance of the four 
+#* variables for predicting churn. Calculate the test error for the obtained 
+#* random forest. Compare it to the test error found for the KNN classifier and 
+#* provide an appropriate comment.
+
+
+
+
+
 
 
