@@ -1,6 +1,18 @@
+#
+# Task H
+# ------
+# 
+# Write jags/BUGS code to perform inference about the following related Bayesian Binary Logistic Regression model
+#
+# Run your code. Include a graphical representation of the traceplots and posterior densities of beta_0 and beta_1 
+# in your report and discuss your results
+#
+# Relevant lecture: Session 8 (2021-03-18)
+#
+
 # Import Dependencies -------------------------------------------------------------------------------------------------------
 
-libs <- c('tidyverse', 'R2jags')
+libs <- c('tidyverse', 'R2jags', 'ggmcmc')
 invisible(lapply(libs, library, character.only = TRUE))
 rm(libs)
 
@@ -88,3 +100,38 @@ bayesian_binary_logistic <- jags(data = data_binary_logistic,
                                  model.file = bayesian_binary_logistic_model)
 
 print(bayesian_binary_logistic, intervals = c(0.025, 0.5, 0.975))
+
+# Visualizing Jags Output ---------------------------------------------------------------------------------------------------
+
+# Convert jags output to an MCMC object
+bayesian_binary_logistic.mcmc <- as.mcmc(bayesian_binary_logistic)
+
+# Convert MCMC object to ggs object
+bayesian_binary_logistic.ggs <- ggs(bayesian_binary_logistic.mcmc)
+
+
+# Traceplots can be used to assess convergence, that is, no dependence on initial chain values
+ggs_traceplot(bayesian_binary_logistic.ggs)
+#
+# We can see that all parameters have converged, following a horizontal pattern
+#
+
+
+# Density and Caterpillar plots for beta_0 and beta_1, respectively
+ggs_density(bayesian_binary_logistic.ggs, family = '^beta_0')
+ggs_caterpillar(bayesian_binary_logistic.ggs, family = '^beta_0')
+
+ggs_density(bayesian_binary_logistic.ggs, family = '^beta_1')
+ggs_caterpillar(bayesian_binary_logistic.ggs, family = '^beta_1')
+#
+# We can see that there is no posterior support at zero
+#
+
+
+#
+ggs_density(bayesian_binary_logistic.ggs, family = '^p')
+ggs_caterpillar(bayesian_binary_logistic.ggs, family = '^p')
+#
+# We can see that as the dosage increases, the likelihood of patient improvement increases
+# Note that the final density subplot is 'p_new', which explains the apparent decrease in likelihood
+#
