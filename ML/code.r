@@ -6,7 +6,8 @@ library(readr)
 library(ggplot2)
 library(tidyverse)
 library(class) #library for KNN
-
+library(tree)
+library(randomForest)
 #reading the data into a dataframe
 data_path <- "./data/churndata.txt"
 churn_data <- read.csv(data_path, sep = " ")
@@ -202,6 +203,10 @@ error
 #* Machine Learning Part (d)∗∗:
 #* Using the training data set apply the random forest (bagging) method to 
 #* construct a classifier to predict churn based on the four available predictors. 
+
+set.seed(4)
+rf.tree <- randomForest(Y ~ ., data = X, subset = train.X, mtry = 2)
+
 #* Using the obtained random forest, comment on the importance of the four 
 #* variables for predicting churn. Calculate the test error for the obtained 
 #* random forest. Compare it to the test error found for the KNN classifier and 
