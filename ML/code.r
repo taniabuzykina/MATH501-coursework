@@ -170,7 +170,7 @@ leave.KNN <- function(k){
                 temp.test.Y <- train.Y[i]
                
                 temp.knn <- knn(train = temp.train.X, test = temp.test.X, cl = temp.train.Y, k = k)
-                temp.tab <- tab <- table(temp.knn, temp.test.Y)
+                tab <- table(temp.knn, temp.test.Y)
                 error <- error + (tab[1,2] + tab[2,1]) / sum(tab)
         }
         
