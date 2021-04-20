@@ -13,15 +13,8 @@ data_path <- "./data/churndata.txt"
 churn_data <- read.csv(data_path, sep = " ")
 churn_data <- na.exclude(churn_data)
 
-#table(churn_data$churn)
-
-###FANCY WAY
-#making variables (columns of the table) visible in the workspace so that we 
-#can directly address them instead of 'churn_data$churn' we now can directly
-#type 'churn'
-
 attach(churn_data)
-table(churn)
+
 
 # 1 boxplot with average speed of upload against an indicator whether a customer 
 # switched to a different provider
@@ -126,7 +119,7 @@ churn_data %>% ggplot() +
 
 
 set.seed(1) # to make the results reproducible
-num_subset <- sample(length(churn), 350) # randomly choose 350 numbers out of 500
+num_subset <- sample(nrow(churn_data), 350) # randomly choose 350 numbers out of 500
 
 #* binding the attached variables of churn_data helps us get a matrix instead of dataframe
 #* because KNN function doesn't like it when it's dataframe
@@ -136,6 +129,8 @@ X <- cbind(upload, webget, enqcount, callwait)
 Y <- churn
 Y <- as.integer(Y == 'yes')
 Y <- as.factor(Y)
+
+detach(churn_data)
 # dividing our data into training and testing matrices
 
 train.X <- X[num_subset, ] # 350 records here
@@ -206,10 +201,59 @@ table(def.knn, test.Y)
 tab <- table(def.knn, test.Y)
 
 # calculating the error using falsely predicted churn values
-error <- (tab[1,2] + tab[2,1]) / sum(tab) 
-sprintf("Expected error: %f Test error: %f", min(errors), error)
+error.KNN <- (tab[1,2] + tab[2,1]) / sum(tab) 
+sprintf("Expected error: %f Test error: %f", min(errors), error.KNN)
 
 
+#* Machine Learning Part (d)∗∗:
+#* Using the training data set apply the random forest (bagging) method to
+#* construct a classifier to predict churn based on the four available predictors.
 
-# CLEANING TIME!!!!!
-rm (list = ls())
+testing.X <- churn_data[-num_subset, ] %>% subset(select = -churn)
+testing.Y <- churn_data[-num_subset, ] %>% subset(select = churn)
+testing.Y <- unlist(testing.Y)
+
+random.tree <- randomForest(churn ~ ., data = churn_data, subset = num_subset, mtry = 2, 
+                            importance = TRUE)
+
+# ANOTHER OPTION - USING TRAINING SET FROM THE BEGINNING without subsetting
+# rf.tree = randomForest(churn ~ ., data = training, mtry = 2)
+
+# *****
+#* Using the obtained random forest, comment on the importance of the four
+#* variables for predicting churn. 
+# *****
+
+# getTree(random.tree, k = 500, labelVar = TRUE) - will not work now because we removed our forest LOL
+varImpPlot(random.tree, main = "Random Forrest Variable Importance")
+
+#* COMMENTARY
+
+#* From both MeanDecreaseAccuracy and MeanDecreaseGini measures we conclude 
+#* that 'webget' is one-sidedly the most important variable. The least important
+#* variable turned out to be 'callwait' followed by 'upload'. 'enqcount' (the
+#* number of customers enquiry calls to an operator) is the second most important
+#* predictor.
+
+
+# *****
+#* Calculate the test error for the obtained
+#* random forest. Compare it to the test error found for the KNN classifier and
+#* provide an appropriate comment.
+# *****
+
+rf.predict <- predict(random.tree, testing.X, type = "class")
+tab <- table(rf.predict, testing.Y)
+tab
+
+error.RandomForrest <- (tab[1,2] + tab[2,1]) / sum(tab)
+error.RandomForrest
+
+sprintf("KNN Error: %f RandomForrest Error: %f", error.KNN, error.RandomForrest)
+
+# COMMENTARY
+#* Random Forrest method is more accurate than KNN with optimal K set to 1. 
+#* The random forrest prediction error is almost 10% lower than KNN. 
+# However, FUN FACT: keep.forest=FALSE - this parameter removes the forest of trees
+# if this parameter is kept and we have only one tree left, then the error rate 
+# grows to 0.12 = the same as KNN's error
