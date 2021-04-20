@@ -6,12 +6,12 @@ library(readr)
 library(ggplot2)
 library(tidyverse)
 library(class) #library for KNN
-library(tree)
-library(randomForest)
+
 
 #reading the data into a dataframe
 data_path <- "./data/churndata.txt"
 churn_data <- read.csv(data_path, sep = " ")
+churn_data <- na.exclude(churn_data)
 
 #table(churn_data$churn)
 
@@ -134,7 +134,8 @@ num_subset <- sample(length(churn), 350) # randomly choose 350 numbers out of 50
 
 X <- cbind(upload, webget, enqcount, callwait) 
 Y <- churn
-
+Y <- as.integer(Y == 'yes')
+Y <- as.factor(Y)
 # dividing our data into training and testing matrices
 
 train.X <- X[num_subset, ] # 350 records here
@@ -142,7 +143,6 @@ train.Y <- Y[num_subset]
 
 test.X <- X[-num_subset, ] # 350 records here
 test.Y <- Y[-num_subset]
-
 
 #----
 
@@ -157,72 +157,59 @@ test.Y <- Y[-num_subset]
 #* Find the optimal K using leave-one-out cross-validation for the training data set.
 #********
 
+leave.KNN <- function(K, train.X, train.Y){
+  error <- 0
+  n <- nrow(train.X)
+  # this function returns an error that is calculated as an average error of KNNs trained using leave-one-out
+        for(i in 1:n){
+          # subsetting the i-th row from the train predictors and classifiers and using them
+          # as temporary training sets (without an i-th row)
+          temp.train.X <- train.X[-i,]
+          temp.train.Y <- train.Y[-i]
 
-# n <- nrow(train.X)
+          # using an i-th row as a temporary test set
+          temp.test.X <- train.X[i,]
+          temp.test.Y <- train.Y[i]
 
-# leave.KNN <- function(k){
-#         error <- 0
-#         
-#         for(i in 1:n){
-#                 
-#                 temp.train.X <- train.X[-i,]
-#                 temp.train.Y <- train.Y[-i]
-#                 temp.test.X <- train.X[i,]
-#                 temp.test.Y <- train.Y[i]
-#                
-#                 temp.knn <- knn(train = temp.train.X, test = temp.test.X, cl = temp.train.Y, k = k)
-#                 tab <- table(temp.knn, temp.test.Y)
-#                 error <- error + (tab[1,1] + tab[2,1]) / sum(tab)
-#         }
-#         
-#      return(error/n)   
-# }
+          # the resulting KNN is tested on only 1 entry
+          temp.knn <- knn(train = temp.train.X, test = temp.test.X, cl = temp.train.Y, k = K)
 
-LOO.KNN <- function(i) {
-        temp.knn <- knn.cv(train = train.X, cl = train.Y, k = i, prob = FALSE, use.all = TRUE)
-        tab <- table(temp.knn, test.Y)
-        return (tab[1,1] + tab[2,1]) / sum(tab)
+          # the error is being calculated on whether a test entry was classified wrongly or not
+          # and accumulated as we'll need to find the mean error in the end
+          error <- error + mean(temp.knn != temp.test.Y) #1 if the test entry was classified wrongly and 0 if correctly
         }
 
+     return (error/n)
+}
 
-errors <- rep(0, 29) #trying with K from 1 to 50
-for (j in 1:30) errors[j] <- LOO.KNN(j)
+# leave.error <- leave.KNN(3, train.X, train.Y)
+# leave.error
+errors <- rep(0, 30) #trying with K from 1 to 30
+for (j in 1:30) errors[j] <- leave.KNN(j, train.X, train.Y)
+
 # plotting errors
 plot(errors, xlab="K", ylab = "Test error")
+
 
 #finding optimal K as an index of the first smallest error value
 optim.K <- which.min(errors)
 optim.K
-min(errors)
+
 #********
 #* Calculate the test error for the classification rule obtained for the optimal K.
 #********
 
 # below is our KNN
-def.knn <- knn(train = train.X, test = test.X, cl = train.Y, k = 1) # yep that's it
+def.knn <- knn(train = train.X, test = test.X, cl = train.Y, k = optim.K) # yep that's it
 
 table(def.knn, test.Y)
 tab <- table(def.knn, test.Y)
 
 # calculating the error using falsely predicted churn values
 error <- (tab[1,2] + tab[2,1]) / sum(tab) 
-error
-
-#* Machine Learning Part (d)∗∗:
-#* Using the training data set apply the random forest (bagging) method to 
-#* construct a classifier to predict churn based on the four available predictors. 
-
-set.seed(4)
-rf.tree <- randomForest(Y ~ ., data = X, subset = train.X, mtry = 2)
-
-#* Using the obtained random forest, comment on the importance of the four 
-#* variables for predicting churn. Calculate the test error for the obtained 
-#* random forest. Compare it to the test error found for the KNN classifier and 
-#* provide an appropriate comment.
+sprintf("Expected error: %f Test error: %f", min(errors), error)
 
 
 
-
-
-
-
+# CLEANING TIME!!!!!
+rm (list = ls())

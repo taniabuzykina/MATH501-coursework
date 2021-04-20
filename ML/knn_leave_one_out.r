@@ -46,7 +46,6 @@ mean.error <- mean(normal.knn!= test.Y)
 mean.error # the result is the same as confusion table error
 
 leave.KNN <- function(K, train.X, train.Y){
-
   error <- 0
   n <- nrow(train.X)
   train.Y <- as.integer(train.Y == 'yes')
@@ -75,11 +74,8 @@ leave.KNN <- function(K, train.X, train.Y){
 # leave.error <- leave.KNN(3, train.X, train.Y)
 # leave.error
 errors <- rep(0, 30) #trying with K from 1 to 30
-
 for (j in 1:30) errors[j] <- leave.KNN(j, train.X, train.Y)
 
 # plotting errors
 plot(errors, xlab="K", ylab = "Test error")
-# train <- rbind(iris3[,,1], iris3[,,2], iris3[,,3])
-# cl <- factor(c(rep("s",50), rep("c",50), rep("v",50)))
-# new.knn <- knn.cv(train, cl, k = 3, prob = TRUE)
+
