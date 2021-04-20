@@ -35,6 +35,8 @@ experiment_df
 #
 ggplot(experiment_df, aes(x = Dose, y = Proportion_reduced)) +
  geom_point() +
+ geom_hline(yintercept=.25,linetype='dotted',col='blue')+
+ geom_hline(yintercept=.75,linetype='dotted',col='blue')+
  labs(x = "Dose (mg/mL)",
       y = "Proportion of patients who get better") +
  scale_y_continuous(breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1),
@@ -43,14 +45,7 @@ ggplot(experiment_df, aes(x = Dose, y = Proportion_reduced)) +
 
 ## What can you conclude from the plot?
 
-# A dose of 500mg/ml or less has no real impact on the proportion of patients
-# who get better (less than 4%). There is a reasonable increase at around the
-# 750mg/ml as it reaches over 20% of the patients. However, the best increase is
-# when the dose is increased to 1000mg/ml with nearly 80% of patients getting
-# better. To increase the proportion of patients to just under 100%, it appears
-# that the dose needs to be more than double to above 2000mg/ml. This is
-# comparable with the current COVID vacinations which see a large increase from
-# the first dose and almost complete immunity with a second dose.
+print("A dose of 500mg/ml or less has no real impact on the proportion of patients who get better (less than 4%). There is a reasonable increase at around the 750mg/ml as it reaches over 20% of the patients. However, the best increase is when the dose is increased to 1000mg/ml with nearly 80% of patients getting better. To increase the proportion of patients to just under 100%, it appears that the dose needs to be more than double to above 2000mg/ml. This is comparable with the current COVID vacinations which see a large increase from the first dose and almost complete immunity with a second dose.")
 
 
 # Statistical Modelling Part (b)* -----------------------------------------
@@ -65,7 +60,7 @@ m <- glm(cbind(Number_better,
          family = binomial, 
          data = experiment_df)
 
-# Maximum likelihood estimates - hat beta_0 and hat beta_1 of the parameters beta_0 and beta_1
+# Maximum likelihood estimates - hat_beta_0 and hat_beta_1 of the parameters beta_0 and beta_1
 beta_0_hat <- coef(m)[1]
 beta_0_hat
 
@@ -121,10 +116,13 @@ ggplot(experiment_df, aes(x = Dose, y = Proportion_reduced)) +
 
 # Work out the log of the dose and add to data frame
 experiment_df <- experiment_df %>% mutate(Log_Dose = log(Dose))
+experiment_df
 
 # Plot these proportions
 ggplot(experiment_df, aes(x = Log_Dose, y = Proportion_reduced)) +
  geom_point() +
+ geom_vline(xintercept=log(500),linetype='dotted',col='blue')+
+ geom_vline(xintercept=log(1000),linetype='dotted',col='blue')+
  labs(x = "Log of Dose (mg/mL)",
       y = "Proportion of patients who get better") +
  scale_y_continuous(breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1),
@@ -146,7 +144,7 @@ m_log <- glm(cbind(Number_better,
          data = experiment_df)
 
 ## QUESTION
-## Fit the logarithmic model in the frequentist framework, report hat beta_0 and hat beta_1
+## Fit the logarithmic model in the frequentist framework, report hat_beta_0 and hat_beta_1
 beta_0_hat <- coef(m_log)[1]
 beta_0_hat
 
@@ -162,8 +160,7 @@ confint(m_log)
 ## QUESTION
 ## Which of the two frequentist models considered in parts (b) and (c) (the standard or the logarithmic model) do you prefer? Why?
 
-print("############################## INSERT ANSWER HERE ##############################")
-
+print("Due to the size of the data set it is difficult to see any difference in the graph as using a log in this case would help with data being compacted and needing to be scaled out in magnatude. As such there is no real benefit to this model. This model does however produce a more confusng graph as the x axis is in units of Log of Dose which is mre confusing that just the standard in graph a of dose as mg/ml. Graph a will be easier to read by many medical professionals as well as general people due to the accessability of this label. In a time of over whelming data accessability is key to helping people understand data and provide information.")
 
 
 # Statistical Modelling Part (d)** ----------------------------------------
@@ -181,8 +178,8 @@ eta_hat <- predict(m_log,
 
 # Approximate 95% confidence interval for eta
 eta_estimate_ci <- c(estimate =eta_hat$fit, 
-                      lower = eta_hat$fit - 2 * eta_hat$se.fit, # Lower limit
-                      upper = eta_hat$fit + 2 * eta_hat$se.fit) # Upper limit
+                     lower = eta_hat$fit - 2 * eta_hat$se.fit, # Lower limit
+                     upper = eta_hat$fit + 2 * eta_hat$se.fit) # Upper limit
 
 # Convert to a confidence interval for p
 p_estimate_ci <- exp(eta_estimate_ci) / (1 + exp(eta_estimate_ci))
@@ -212,7 +209,7 @@ data.frame(exp(Dose_new), p_estimate_ci_direct)
 ## QUESTION
 ## Which one of the two methods is generally recommended? Why?
 
-print("It is generally recommended to use the indirect method as it provides more accurate results more regularly than the direct method.")
+print("It is generally recommended to use the indirect method as it provides more accurate results more regularly than the direct method. This is not evident in the currnet data set, but this is most likely due to its small size.")
 
 # Statistical Modelling Part (e)** ----------------------------------------
 
@@ -278,12 +275,82 @@ ggplot(experiment_df, aes(x = Log_Dose, y = Proportion_reduced)) +
 # Null hypothesis H0: Model (2) provides an adequate fit to the data
 # Alternative hypothesis H1: Model (2) does not provide an adequate fit to the data.
 
+# Null hypothesis H0: The model as it stands is useful.
+# Alternative hypothesis H1: The model as it stands is NOT useful.
+
 p_value <- pchisq(deviance(m_log),# Specify the model under consideration
             df.residual(m_log),
             lower = FALSE)
-
 p_value
 
 ## QUESTION
 ## State your hypotheses and conclusions carefully.
-print("p-value is less than 0.05 and thus the null hypothesis is rejected signifiying that this model is not an adequete fit to the data.") 
+print("P-value is less than 0.05 and thus the null hypothesis is rejected signifiying that this model is not an adequete fit to the data or in other words is not useful.") 
+
+
+# Statistical Modelling Part (f)** ----------------------------------------
+
+## QUESTION
+## Fit the quadratic model in the frequentist framework and report hat_beta_0, hat_beta_1 and hat_beta_2.
+m_log_log2 <- glm(cbind(Number_better, 
+                        Number_treated - Number_better) ~ Log_Dose + I(Log_Dose^2), 
+                family = binomial, 
+                data = experiment_df)
+
+## QUESTION
+## Fit the logarithmic model in the frequentist framework, report hat_beta_0, hat_beta_1 and hat_beta_2
+beta_0_hat <- coef(m_log_log2)[1]
+  beta_0_hat
+beta_1_hat <- coef(m_log_log2)[2]
+  beta_1_hat
+beta_2_hat <- coef(m_log_log2)[3]
+  beta_2_hat
+
+## QUESTION
+## Perform a frequentist hypothesis test of size 0.05 of whether beta_2 is statistically significant and report your conclusion with justification. 
+
+# The hypotheses are:
+# Null hypothesis H0: Model (2) provides an adequate fit to the data
+# Alternative hypothesis H1: Model (2) does not provide an adequate fit to the data.
+
+# Null hypothesis H0: The model as it stands is useful.
+# Alternative hypothesis H1: The model as it stands is NOT useful.
+
+p_value <- pchisq(deviance(m_log_log2),# Specify the model under consideration
+            df.residual(m_log_log2),
+            lower = FALSE)
+p_value
+
+## QUESTION
+## State your hypotheses and conclusions carefully.
+print("P-value is less than 0.05 and thus the null hypothesis is rejected signifiying that this model is not an adequete fit to the data or in other words is not useful.") 
+
+
+## QUESTION
+## In addition, report the 95% confidence interval for beta_2. Does this result confirm the conclusion of the hypothesis test?
+# confint(m_log_log2)
+tail(confint(m_log_log2),1)
+
+
+
+# Statistical Modelling Part (g)* ----------------------------------------
+
+## QUESTION
+## Use the analysis of Deviance method to compare the logarithmic model fitted in part (c) with the quadratic model fitted in part (f). State your hypotheses and conclusions carefully.
+Deviance_c_log <- deviance(m_log)
+Deviance_c_log
+Deviance_f_log_log2 <- deviance(m_log_log2)
+Deviance_f_log_log2
+
+#  Difference in deviances 
+Deviance_c_log - Deviance_f_log_log2
+
+# Compare the models
+#
+# H_0: Model C is adequate compared to Model F
+# H_1: Model C is not adequate compared to Model F
+#
+AnovaTest <- anova(m_log, m_log_log2, test = "Chisq")
+AnovaTest[2,5]
+
+print("Here, there p-value is 0.23. As this is greater than 0.05, we do not reject the null hypothesis and so Model C is adequate compared to Model F. In other words beta_2 = 0. Thus Model C is preferred over Model F")
