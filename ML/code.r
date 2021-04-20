@@ -8,6 +8,7 @@ library(tidyverse)
 library(class) #library for KNN
 library(tree)
 library(randomForest)
+
 #reading the data into a dataframe
 data_path <- "./data/churndata.txt"
 churn_data <- read.csv(data_path, sep = " ")
@@ -157,28 +158,35 @@ test.Y <- Y[-num_subset]
 #********
 
 
-n <- nrow(train.X)
+# n <- nrow(train.X)
 
-leave.KNN <- function(k){
-        error <- 0
-        
-        for(i in 1:n){
-                
-                temp.train.X <- train.X[-i,]
-                temp.train.Y <- train.Y[-i]
-                temp.test.X <- train.X[i,]
-                temp.test.Y <- train.Y[i]
-               
-                temp.knn <- knn(train = temp.train.X, test = temp.test.X, cl = temp.train.Y, k = k)
-                tab <- table(temp.knn, temp.test.Y)
-                error <- error + (tab[1,2] + tab[2,1]) / sum(tab)
+# leave.KNN <- function(k){
+#         error <- 0
+#         
+#         for(i in 1:n){
+#                 
+#                 temp.train.X <- train.X[-i,]
+#                 temp.train.Y <- train.Y[-i]
+#                 temp.test.X <- train.X[i,]
+#                 temp.test.Y <- train.Y[i]
+#                
+#                 temp.knn <- knn(train = temp.train.X, test = temp.test.X, cl = temp.train.Y, k = k)
+#                 tab <- table(temp.knn, temp.test.Y)
+#                 error <- error + (tab[1,1] + tab[2,1]) / sum(tab)
+#         }
+#         
+#      return(error/n)   
+# }
+
+LOO.KNN <- function(i) {
+        temp.knn <- knn.cv(train = train.X, cl = train.Y, k = i, prob = FALSE, use.all = TRUE)
+        tab <- table(temp.knn, test.Y)
+        return (tab[1,1] + tab[2,1]) / sum(tab)
         }
-        
-     return(error/n)   
-}
 
-errors <- rep(0, 30) #trying with K from 1 to 50
-for (j in 1:30) errors[j] <- leave.KNN(j)
+
+errors <- rep(0, 29) #trying with K from 1 to 50
+for (j in 1:30) errors[j] <- LOO.KNN(j)
 # plotting errors
 plot(errors, xlab="K", ylab = "Test error")
 
@@ -191,7 +199,7 @@ min(errors)
 #********
 
 # below is our KNN
-def.knn <- knn(train = train.X, test = test.X, cl = train.Y, k = optim.K) # yep that's it
+def.knn <- knn(train = train.X, test = test.X, cl = train.Y, k = 1) # yep that's it
 
 table(def.knn, test.Y)
 tab <- table(def.knn, test.Y)
