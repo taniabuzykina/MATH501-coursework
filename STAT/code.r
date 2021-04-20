@@ -2,9 +2,9 @@
 
 
 # Add Libraries -----------------------------------------------------------
-library(dplyr)
-library(ggplot2)
-library(MASS)
+lib <- c('dplyr', 'ggplot2', 'MASS')
+lapply(lib, library, character.only = T)
+rm(lib)
 
 
 # Data --------------------------------------------------------------------
@@ -47,7 +47,7 @@ ggplot(experiment_df, aes(x = Dose, y = Proportion_reduced)) +
 # who get better (less than 4%). There is a reasonable increase at around the
 # 750mg/ml as it reaches over 20% of the patients. However, the best increase is
 # when the dose is increased to 1000mg/ml with nearly 80% of patients getting
-# better. To increase the proportion of patients to just under 100%, it appear
+# better. To increase the proportion of patients to just under 100%, it appears
 # that the dose needs to be more than double to above 2000mg/ml. This is
 # comparable with the current COVID vacinations which see a large increase from
 # the first dose and almost complete immunity with a second dose.
