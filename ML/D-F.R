@@ -1,5 +1,4 @@
 # Title     : Questions d-f
-# Objective : TODO
 # Created by: tania
 # Created on: 20/04/2021
 
