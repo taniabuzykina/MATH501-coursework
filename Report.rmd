@@ -223,3 +223,108 @@ testing.Y <- unlist(testing.Y)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+# Statistical Modelling
+
+Load in the data and place in a data frame
+```{r}
+# Data --------------------------------------------------------------------
+Patient_group <- c(1,2,3,4) #i
+Dose <- c(422,744,948,2069) #di
+Number_treated <- c(50,50,50,50) #ni
+Number_better <- c(2,13,39,48) #yi
+
+experiment_df <- data.frame(Patient_group, Dose, Number_treated, Number_better)
+experiment_df
+```
+
+
+## **Part (a)**
+
+**Calculate the proportion of patients who gets better with the new medicine and use ggplot2 to visualize these data.**
+
+Work out proportions with reduced blood pressure 
+```{r}
+experiment_df <- experiment_df %>% mutate(Proportion_reduced = Number_better / Number_treated)
+```
+
+Plot these proportions
+```{r}
+Plot_A <- 
+  ggplot(experiment_df, aes(x = Dose, y = Proportion_reduced)) +
+    geom_point() +
+    geom_hline(yintercept=.25,linetype='dotted',col='blue')+
+    geom_hline(yintercept=.75,linetype='dotted',col='blue')+
+    labs(x = "Dose (mg/mL)",
+          y = "Proportion of patients who get better") +
+    scale_y_continuous(breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1),
+                        minor_breaks = NULL,
+                        limits = c(0, 1))
+```
+
+```{r, echo=FALSE}
+Plot_A
+```
+
+**What can you conclude from the plot?**
+
+A dose of 500mg/ml or less has no real impact on the proportion of patients who get better (less than 4%). There is a reasonable increase at around the 750mg/ml as it reaches over 20% of the patients. However, the best increase is when the dose is increased to 1000mg/ml with nearly 80% of patients getting better. To increase the proportion of patients to just under 100%, it appears that the dose needs to be more than double to above 2000mg/ml. This is comparable with the current COVID vacinations which see a large increase from the first dose and almost complete immunity with a second dose.
+
+## **Part (b)**
+
+**Fit the model in the frequentist framework and report hat beta_0 (intercept) and hat beta_1 (Dose(x))**
+```{r}
+# Fitting the binary logistic regression model
+m <- glm(cbind(Number_better, 
+               Number_treated - Number_better) ~ Dose, 
+         family = binomial, 
+         data = experiment_df)
+
+# Maximum likelihood estimates - hat_beta_0 and hat_beta_1 of the parameters beta_0 and beta_1
+beta_0_hat <- coef(m)[1]
+beta_0_hat
+
+beta_1_hat <- coef(m)[2]
+beta_1_hat
+
+# Confidence intervals for beta_0 and beta_1
+confint(m)
+```
+
+## **Part (c)**
+
+**Create a similar plot to that produced in part (a) to visualise log(di) against the proportion of Covid-19 patients who gets better and compare the two plots.**
+```{r}
+# Work out the log of the dose and add to data frame
+experiment_df <- experiment_df %>% mutate(Log_Dose = log(Dose))
+```
+
+```{r}
+# Plot these proportions
+ggplot(experiment_df, aes(x = Log_Dose, y = Proportion_reduced)) +
+ geom_point() +
+ geom_vline(xintercept=log(500),linetype='dotted',col='blue')+
+ geom_vline(xintercept=log(1000),linetype='dotted',col='blue')+
+ labs(x = "Log of Dose (mg/mL)",
+      y = "Proportion of patients who get better") +
+ scale_y_continuous(breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1),
+                    minor_breaks = NULL,
+                    limits = c(0, 1))
+```
+
+**What do you conclude?**
+
+INSERT ANSWER HERE ############################################################
+
+

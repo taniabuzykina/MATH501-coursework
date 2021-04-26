@@ -70,6 +70,7 @@ beta_1_hat
 # Confidence intervals for beta_0 and beta_1
 confint(m)
 
+#-----------------------------------------------------------------------------------------------------
 
 # Visualization of the fitted model
 
