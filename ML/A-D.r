@@ -6,6 +6,8 @@ library(readr)
 library(ggplot2)
 library(tidyverse)
 library(class) #library for KNN
+library(GGally) # library for PCA
+library(randomForest)
 
 
 #reading the data into a dataframe
@@ -26,11 +28,11 @@ churn_data %>% ggplot() +
 
 #COMMENTARY:
 
-# As we can see the customers who have not yet switched to a different operator have 
+# As we can see the customers who have not yet switched to a different operator have
 # lower average speed of upload in the internet in comparison with the customers
-# who have switched. In general, having higher uplink speed is a plus since it 
+# who have switched. In general, having higher uplink speed is a plus since it
 # improves the Internet phone/video call experience and it does no harm to the customers
-# Hence increasing uplink speed could not affect the customers' decision to switch to 
+# Hence increasing uplink speed could not affect the customers' decision to switch to
 # different operators
 
 # 2 boxplot with the mean time to load a webpage against an indicator whether a customer 
@@ -43,15 +45,15 @@ churn_data %>% ggplot() +
        color = "Switched")
 
 # COMMENTARY
-# We can observe a strong dependency between the time to load a webpage 
+# We can observe a strong dependency between the time to load a webpage
 # (which directly corresponds to the downlink speed) and an indicator whether customers
-# changed their operators. The average downlink speed was significantly lower for 
+# changed their operators. The average downlink speed was significantly lower for
 # the customers that have switched to a different provider than for those who haven't.
 # We can conclude this as the average time to load a webpage for those clients who
-# switched is nearly 200 units longer than of those who didn't.  
+# switched is nearly 200 units longer than of those who didn't.
 
-# 3 boxplot with how long a customer waited on the phone call for a customer 
-# service operator against an indicator whether a customer 
+# 3 boxplot with how long a customer waited on the phone call for a customer
+# service operator against an indicator whether a customer
 # switched to a different provider
 
 churn_data %>% ggplot() + 
@@ -62,16 +64,16 @@ churn_data %>% ggplot() +
 
 # COMMENTARY
 
-# Even though the average waiting time for a customer service operator is 
-# similar in both cases, overall the majority of of customers who switched to a 
+# Even though the average waiting time for a customer service operator is
+# similar in both cases, overall the majority of of customers who switched to a
 # different operator had to wait longer than the average and the customers who
-# haven't changed their provider. We can assume that the time spent by a 
-# customer on a call while they're waiting for a customer service operator to 
-# attend may impact their decision to switch to another operator although the 
+# haven't changed their provider. We can assume that the time spent by a
+# customer on a call while they're waiting for a customer service operator to
+# attend may impact their decision to switch to another operator although the
 # influence seems to be less significant compared to time to load a webpage.
 
 # 4 boxplot with the number of times a customer contacted the company
-# via a phone call against an indicator whether a customer 
+# via a phone call against an indicator whether a customer
 # switched to a different provider
 
 churn_data %>% ggplot() + 
@@ -82,12 +84,12 @@ churn_data %>% ggplot() +
 
 # COMMENTARY
 
-# we can observe that in average the customers that switched to a different 
+# we can observe that in average the customers that switched to a different
 # operator contacted the company via a phone call 1 time more often than others
 # The biggest number of contact attempts is 2 calls more than of the customers
-# who haven't changed their providers. Needs to be mentioned that some of 
+# who haven't changed their providers. Needs to be mentioned that some of
 # the customers who switched didn't contact the company even once. On the contrary
-# minority of the customers who haven't changed their provider also have more 
+# minority of the customers who haven't changed their provider also have more
 # than 5 and even 6 calls. Still it will be safe to assume that the number of calls
 # impacts the customers' decision to choose a different operator but its importance
 # is smaller the time to load a webpage.
@@ -95,18 +97,18 @@ churn_data %>% ggplot() +
 
 #*CONCLUSION
 #*
-#*Out of all the 4 factors that can possibly influence the 'churn' variable 
-#*time to load the webpage (which subsequently leads to the downlink speed) is the 
-#*most important one. Average phone call customer service waiting time doesn't 
-#*differ drastically but still is higher for customers who chose 
-#*different providers hence we could conclude that this aspect also plays its part in 
-#*the customers' decision as well as the number of phone calls to the company.
-#*The most suspicious variable is the upload speed - for those clients who changed
-#*their providers the uplink speed was actually higher but the downlink speed was lower
-#*(comparing to the customers who didn't change their provider) while normaly 
-#*the opposite should be the case (unless we're talking about 5G). 
-#*Unfortunately, we don't have access to any other data hence we can only speculate that 
-#*perhaps there are some issues with the provider's network. 
+# *Out of all the 4 factors that can possibly influence the 'churn' variable
+# *time to load the webpage (which subsequently leads to the downlink speed) is the
+# *most important one. Average phone call customer service waiting time doesn't
+# *differ drastically but still is higher for customers who chose
+# *different providers hence we could conclude that this aspect also plays its part in
+# *the customers' decision as well as the number of phone calls to the company.
+# *The most suspicious variable is the upload speed - for those clients who changed
+# *their providers the uplink speed was actually higher but the downlink speed was lower
+# *(comparing to the customers who didn't change their provider) while normaly
+# *the opposite should be the case (unless we're talking about 5G).
+# *Unfortunately, we don't have access to any other data hence we can only speculate that
+# *perhaps there are some issues with the provider's network.
 
 #----
 
@@ -151,6 +153,16 @@ test.Y <- Y[-num_subset]
 #********
 #* Find the optimal K using leave-one-out cross-validation for the training data set.
 #********
+
+
+normalise <- function (inList){
+  m <- mean(inList)
+  s <- sd(inList)
+  inList <- (inList - m)/s
+  return(inList)
+}
+
+train.X <- apply(train.X, 2, normalise)
 
 leave.KNN <- function(K, train.X, train.Y){
   error <- 0
@@ -224,7 +236,6 @@ random.tree <- randomForest(churn ~ ., data = churn_data, subset = num_subset, m
 #* variables for predicting churn. 
 # *****
 
-# getTree(random.tree, k = 500, labelVar = TRUE) - will not work now because we removed our forest LOL
 varImpPlot(random.tree, main = "Random Forrest Variable Importance")
 
 #* COMMENTARY
@@ -246,14 +257,126 @@ rf.predict <- predict(random.tree, testing.X, type = "class")
 tab <- table(rf.predict, testing.Y)
 tab
 
-error.RandomForrest <- (tab[1,2] + tab[2,1]) / sum(tab)
-error.RandomForrest
+error.RandomForest <- (tab[1,2] + tab[2,1]) / sum(tab)
+error.RandomForest
 
-sprintf("KNN Error: %f RandomForrest Error: %f", error.KNN, error.RandomForrest)
+sprintf("KNN Error: %f RandomForrest Error: %f", error.KNN, error.RandomForest)
 
 # COMMENTARY
-#* Random Forrest method is more accurate than KNN with optimal K set to 1. 
-#* The random forrest prediction error is almost 10% lower than KNN. 
+#* Random Forest method is more accurate than KNN with optimal K set to 1 with 
+#* prediction error almost 10% lower than KNN. 
 # However, FUN FACT: keep.forest=FALSE - this parameter removes the forest of trees
-# if this parameter is kept and we have only one tree left, then the error rate 
-# grows to 0.12 = the same as KNN's error
+# from our random forest model.if this parameter is kept and we have only 
+# one tree left, then the error rate grows to 0.12 = the same as KNN's error
+
+#****
+# Machine Learning Part (e)∗∗: Using the entire data set (training set and 
+# test set combined), perform Principal Component Analysis for the four 
+# variables: upload, webget,enqcount and callwait. Comment on the results.
+#****
+
+churn_predictors <- churn_data[ , c("upload", "webget","enqcount", "callwait")]
+
+ggpairs(churn_predictors)
+
+#* COMMENTARY
+#* The 'upload' and 'webget' variables have the biggest correlation coefficient
+#* 0.661. Since the is closer to 1 we can assume that although weak but there
+#* might be dependency between those 2 variables. The 'upload' data has the 
+#* majority of records with speed between 7.5 and 12.5 units, while most of 'webget'
+#* entries' values rise up to 600 units. 'callwait' and 'enqcount' have second biggest
+#* but still a very weak correlation of 0.278. Most of the entries in 'enqcount'
+#* variable have at least one call and spread up until 7 calls with the highest 
+#* number of entries in 2 calls while 'callwait' shows that most of the customers 
+#* had to wait from 5 to 12.5 units (mins presumably) or on the contrary, we can
+#* observe that some of the customers waited for less than 2.5 units of time.
+#* Overall the correlation between predictors is rather weak, 'upload', 'enqcount' 
+#* and 'callwait' variables have high variation. Correlation between 'upload' and 
+#* 'webget' can be considered as strong in the current dataset since it's closer to 1. 
+
+churn_pca <- princomp(churn_predictors, cor = TRUE)
+# the first column contains the names of cities so we exclude it.
+summary(churn_pca)
+
+# COMMENTARY
+#* New variable Comp.1 holds 41.5% of variance in the data and has the deviation 
+#* of 1.289, which is the biggest spread of the data. Comp. 2 accounts for 31.9%
+#* of the information variance giving a cumulative percentage of 73.5%.
+#* The 2 components contain different information and created by using data from 
+#* variables with certain weights.  
+
+new_churn <- churn_pca$scores # creating a table of new predictors
+
+rm(churn_predictors)
+
+
+#****
+# Using principal components, create the “best” two dimensional view of the data set. 
+# In this visualisation, use colour coding to indiciate the churn. 
+#****
+
+# for the 2-dim view will use comp.1 and comp.2
+new_churn <- data.frame(new_churn)
+new_churn <- new_churn %>% mutate(churn = churn_data$churn)
+
+
+# plotting
+new_churn %>% ggplot(aes(x = Comp.1, y = Comp.2, color = churn)) +
+  geom_point() +
+  labs(x = "First Principal Component",
+       y = "Second Principal Component") +
+  coord_fixed(ratio = 1) 
+
+#****
+#*How much of the variation or information in the data is preserved in this plot?
+#*Provide an interpretation of the first two principal components.
+#****
+
+biplot(churn_pca, cex = c(0.5, 1),
+       xlab = "Contribution to First Principal Component",
+       ylab = "Contribution to Second Principal Component")
+
+#*COMMENTARY
+#*Together, the first two principal components explain 73.5% of the variability.
+#*ADD SOME INFO ON THE PLOT AND VARIABLES IN COMPONENTS
+
+#****
+# Machine Learning Part (f)∗∗∗: Apply the random forest (bagging) method to construct
+# a classifier to predict churn based on the two first principal components 
+# as predictors. In doing so, use the split of the data into a training and 
+# test set (you may use the same indices as in part (b)).
+#****
+
+new_churn <- new_churn %>% subset(select = c(Comp.1, Comp.2, churn))
+pca.test.X <- new_churn[-num_subset, ] %>% subset(select = -churn)
+pca.test.Y <- churn_data[-num_subset, ] %>% subset(select = churn)
+pca.test.Y <- unlist(pca.test.Y)
+
+pca.random.tree <- randomForest(churn ~ ., data = new_churn, subset = num_subset, mtry = 1, 
+                            importance = TRUE)
+#****
+# Calculate the test error for the obtained random forest and comment on it.
+#****
+
+pca.rf.predict <- predict(pca.random.tree, pca.test.X, type = "class")
+tab <- table(pca.rf.predict, pca.test.Y)
+tab
+
+error.PCA.RandomForest <- (tab[1,2] + tab[2,1]) / sum(tab)
+error.PCA.RandomForest
+
+# COMMENTARY
+# TO BE ADDED
+
+#****
+# Visualise the resulting classification rule on the scatter plot of the two 
+# first principal components.
+#****
+
+pca.test.X %>% ggplot(aes(x = Comp.1, y = Comp.2, color = pca.rf.predict)) +
+  geom_point() +
+  coord_fixed(ratio = 1) + 
+  labs(x = "Principal Component 1", y = "Principal Component 2",
+       color = "Churn")
+
+
