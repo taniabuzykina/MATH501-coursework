@@ -18,7 +18,7 @@ knitr::opts_chunk$set(echo = TRUE)
 Solving tasks in the Machine Learning Section implied possessing basic knowledge of decision trees and KNN as well as the ability to perform Principal Component Analysis. In most cases, the solutions were provided in practical exercises.
 
 ### **Part (a)**
-Present the data visually using box-and-whisker plots with a distinction for churn. Comment on the data in the context of the problem.
+*Present the data visually using box-and-whisker plots with a distinction for churn. Comment on the data in the context of the problem.*
 
 ```{r, echo=FALSE, include=FALSE}
 library(readr)
@@ -34,9 +34,8 @@ Reading our data in a dataframe:
 ```{r}
 data_path <- "data/churndata.txt"
 churn_data <- read.csv(data_path, sep = " ")
-churn_data <- na.exclude(churn_data)
+churn_data <- na.exclude(churn_data) # removing entries with NA values
 
-attach(churn_data)
 ```
 
 
@@ -100,3 +99,63 @@ minority of the customers who haven't changed their provider also have more than
 
 Out of all the 4 factors that can possibly influence the 'churn' variable time to load the webpage (which subsequently leads to the downlink speed) is the most important one. Average phone call customer service waiting time doesn't differ drastically but still is higher for customers who chose different providers hence we could conclude that this aspect also plays its part in the customers' decision as well as the number of phone calls to the company. The most suspicious variable is the upload speed - for those clients who changed their providers the uplink speed was actually higher but the downlink speed was lower (comparing to the customers who didn't change their provider) while normaly the opposite should be the case (unless we're talking about 5G).
 Unfortunately, we don't have access to any other data hence we can only speculate that perhaps there are some issues with the provider's network.
+
+
+### **Part (b)**
+*Create a training set consisting of 350 randomly chosen data points and a test set consisting of the remaining 150 data points.*
+
+```{r}
+
+set.seed(1) # to make the results reproducible
+num_subset <- sample(nrow(churn_data), 350) # randomly choose 350 numbers out of 500
+```
+Separating the data into predictors (X) and classifier (Y):
+```{r}
+attach(churn_data)
+
+X <- cbind(upload, webget, enqcount, callwait) 
+Y <- churn
+Y <- as.integer(Y == 'yes')
+Y <- as.factor(Y)
+
+detach(churn_data)
+```
+
+Dividing the data into training and testing sets:
+```{r}
+train.X <- X[num_subset, ] # 350 records
+train.Y <- Y[num_subset]
+
+test.X <- X[-num_subset, ] # 150 records
+test.Y <- Y[-num_subset]
+```
+
+### **Part (c)** 
+*Using the training data set apply the K nearest neighbours method to construct a classifier to predict churn based on the four available predictors. Find the optimal K using leave-one-out cross-validation for the training data set. Calculate the test error for the classification rule obtained for the optimal K.*
+
+----------------------------------------------------------
+Before actually applying KNN we need to normalise the dataset because our data has different units and is on a different scale. 
+
+Writing a function for normalising our predictors: substracting mean value and diving the result by the standard deviation.   
+```{r}
+normalise <- function (inList){
+  m <- mean(inList)
+  s <- sd(inList)
+  inList <- (inList - m)/s
+  return(inList)
+}
+
+```
+
+Applyting this function to each of the columns in our test and traininig sets.
+```{r}
+train.X <- apply(train.X, 2, normalise)
+test.X <- apply(test.X, 2, normalise)
+
+```
+Now our predictors have values in the same range.
+```{r}
+head(train.X)
+```
+
+

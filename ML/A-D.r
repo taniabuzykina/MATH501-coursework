@@ -154,6 +154,14 @@ test.Y <- Y[-num_subset]
 #* Find the optimal K using leave-one-out cross-validation for the training data set.
 #********
 
+
+normalise <- function (inList){
+  m <- mean(inList)
+  s <- sd(inList)
+  inList <- (inList - m)/s
+}
+
+
 leave.KNN <- function(K, train.X, train.Y){
   error <- 0
   n <- nrow(train.X)
@@ -363,21 +371,10 @@ error.PCA.RandomForest
 # first principal components.
 #****
 
-# I personally think that this is about the test set. With the test set it's gonna be like this
-
-colour.pca.test = rep(NA, length=length(pca.rf.predict))
-colour.pca.test[which(pca.rf.predict == "yes")] <- "green"
-colour.pca.test[which(pca.rf.predict=="no")] <- "red"
-
-
-# ok so this thing is working but it's ugly af and the legend doesn't work the
-# way i want...
-
-plot(pca.test.X, col = colour.pca.test,
-     xlab = "Principal Component 1", ylab = "Principal Component 2",
-     main = "Classification rule of the 2 principal components")
-
-# ...so I'm trying to do it ggplot way
-pca.test.X %>% ggplot(aes(x = Comp.1, y = Comp.2)) + 
+pca.test.X %>% ggplot(aes(x = Comp.1, y = Comp.2, color = pca.rf.predict)) +
+  geom_point() +
+  coord_fixed(ratio = 1) + 
+  labs(x = "Principal Component 1", y = "Principal Component 2",
+       color = "Churn")
 
 
