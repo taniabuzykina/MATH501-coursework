@@ -147,7 +147,7 @@ normalise <- function (inList){
 
 ```
 
-Applyting this function to each of the columns in our test and traininig sets.
+Applying this function to each of the columns in our test and traininig sets.
 ```{r}
 train.X <- apply(train.X, 2, normalise)
 test.X <- apply(test.X, 2, normalise)
@@ -158,4 +158,61 @@ Now our predictors have values in the same range.
 head(train.X)
 ```
 
+Writing a function for KNN with leave-one-out cross-validation. Leave-one-out is a special case of k-fold cross validation. 
+
+```{r}
+leave.KNN <- function(K, train.X, train.Y){
+  error <- 0
+  n <- nrow(train.X)
+  # this function returns an error that is calculated as an average error of KNNs trained using leave-one-out
+        for(i in 1:n){
+          # subsetting the i-th row from the train predictors and classifiers and using them
+          # as temporary training sets (without an i-th row)
+          temp.train.X <- train.X[-i,]
+          temp.train.Y <- train.Y[-i]
+
+          # using an i-th row as a temporary test set
+          temp.test.X <- train.X[i,]
+          temp.test.Y <- train.Y[i]
+
+          # the resulting KNN is tested on only 1 entry
+          temp.knn <- knn(train = temp.train.X, test = temp.test.X, cl = temp.train.Y, k = K)
+
+          # the error is being calculated on whether a test entry was classified wrongly or not
+          # and accumulated as we'll need to find the mean error in the end
+          error <- error + mean(temp.knn != temp.test.Y) #1 if the test entry was classified wrongly and 0 if correctly
+        }
+
+     return (error/n) #returning the average error
+}
+```
+
+Now trying to find the optimal K in a range of values between 1 to 30. Running the *leave.KNN* function in a loop and storing the calculated in the function error in an array.
+```{r}
+errors <- rep(0, 30) #trying with K from 1 to 30
+for (j in 1:30) errors[j] <- leave.KNN(j, train.X, train.Y)
+```
+Plotting our errors
+```{r}
+# plotting errors
+plot(errors, xlab="K", ylab = "Test error")
+```
+
+Finding optimal K as an index of the first smallest error value
+```{r}
+
+optim.K <- which.min(errors)
+```
+
+Now running KNN with the optimal K found from the leave-one-out cross-validation. 
+```{r}
+def.knn <- knn(train = train.X, test = test.X, cl = train.Y, k = optim.K) # yep that's it
+tab <- table(def.knn, test.Y) # confusion table
+```
+Calculating the error using falsely predicted churn values
+
+```{r}
+error.KNN <- (tab[1,2] + tab[2,1]) / sum(tab) 
+sprintf("Expected error: %f Test error: %f", min(errors), error.KNN)
+```
 

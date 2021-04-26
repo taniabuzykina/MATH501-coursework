@@ -159,8 +159,10 @@ normalise <- function (inList){
   m <- mean(inList)
   s <- sd(inList)
   inList <- (inList - m)/s
+  return(inList)
 }
 
+train.X <- apply(train.X, 2, normalise)
 
 leave.KNN <- function(K, train.X, train.Y){
   error <- 0
