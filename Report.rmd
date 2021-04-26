@@ -15,8 +15,6 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Machine Learning
 
-Solving tasks in the Machine Learning Section implied possessing basic knowledge of decision trees and KNN as well as the ability to perform Principal Component Analysis. In most cases, the solutions were provided in practical exercises.
-
 ### **Part (a)**
 **Present the data visually using box-and-whisker plots with a distinction for churn. Comment on the data in the context of the problem.**
 
