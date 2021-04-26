@@ -307,7 +307,6 @@ summary(churn_pca)
 #* variables with certain weights.  
 
 new_churn <- churn_pca$scores # creating a table of new predictors
-
 rm(churn_predictors)
 
 
