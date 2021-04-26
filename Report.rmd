@@ -29,7 +29,7 @@ churn_data <- read.csv(data_path, sep = " ")
 churn_data <- na.exclude(churn_data) # removing entries with NA values
 ```
 
-**Boxplot with average speed of upload against an indicator whether a customer switched to a different provider.**
+Boxplot with average speed of upload against an indicator whether a customer switched to a different provider:
 ```{r}
 churn_data %>% ggplot(aes(x = churn, y = upload, color = churn)) + 
  geom_boxplot() +
@@ -45,7 +45,7 @@ improves the Internet phone/video call experience and it does no harm to the cus
 Hence increasing uplink speed could not affect the customers' decision to switch to
 different operators.
 
-**Boxplot with the mean time to load a webpage against an indicator whether a customer switched to a different provider.**
+Boxplot with the mean time to load a webpage against an indicator whether a customer switched to a different provider:
 ```{r}
 churn_data %>% ggplot(aes(x = churn, y = webget, color = churn)) + 
  geom_boxplot() +
@@ -57,7 +57,7 @@ churn_data %>% ggplot(aes(x = churn, y = webget, color = churn)) +
 We can observe a strong dependency between the time to load a webpage (which directly corresponds to the downlink speed) and an indicator whether customers changed their operators. The average downlink speed was significantly lower for the customers that have switched to a different provider than for those who haven't. We can conclude this as the average time to load a webpage for those clients who switched is nearly 200 units longer than of those who didn't.
 
 
-**Boxplot with how long a customer waited on the phone call for a customer service operator against an indicator whether a customer switched to a different provider.**
+Boxplot with how long a customer waited on the phone call for a customer service operator against an indicator whether a customer switched to a different provider:
 ```{r}
 churn_data %>% ggplot(aes(x = churn, y = callwait, color = churn)) + 
  geom_boxplot() +
@@ -69,7 +69,7 @@ churn_data %>% ggplot(aes(x = churn, y = callwait, color = churn)) +
 Even though the average waiting time for a customer service operator is similar in both cases, overall the majority of of customers who switched to a different operator had to wait longer than the average and the customers who haven't changed their provider. We can assume that the time spent by a customer on a call while they're waiting for a customer service operator to attend may impact their decision to switch to another operator although the influence seems to be less significant compared to time to load a webpage.
 
 
-**Boxplot with the number of times a customer contacted the company via a phone call against an indicator whether a customer switched to a different provider.**
+Boxplot with the number of times a customer contacted the company via a phone call against an indicator whether a customer switched to a different provider:
 ```{r}
 churn_data %>% ggplot(aes(x = churn, y = enqcount, color = churn)) + 
  geom_boxplot() +
@@ -130,7 +130,7 @@ normalise <- function (inList){
 }
 ```
 
-Applying this function to each of the columns in our test and traininig sets.
+Applying this function to each of the columns in our test and traininig sets:
 ```{r}
 train.X <- apply(train.X, 2, normalise)
 test.X <- apply(test.X, 2, normalise)
