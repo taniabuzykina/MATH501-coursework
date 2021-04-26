@@ -349,20 +349,35 @@ pca.random.tree <- randomForest(churn ~ ., data = new_churn, subset = num_subset
 #****
 
 pca.rf.predict <- predict(pca.random.tree, pca.test.X, type = "class")
-tab <- table(rf.predict, pca.test.Y)
+tab <- table(pca.rf.predict, pca.test.Y)
 tab
 
 error.PCA.RandomForest <- (tab[1,2] + tab[2,1]) / sum(tab)
 error.PCA.RandomForest
 
 # COMMENTARY
-#* The test error is practically the same as the random forest run on all the
-#* predictors: 0.026
+# TO BE ADDED
 
 #****
 # Visualise the resulting classification rule on the scatter plot of the two 
 # first principal components.
 #****
 
-#* Practical 5 (g)
+# I personally think that this is about the test set. With the test set it's gonna be like this
+
+colour.pca.test = rep(NA, length=length(pca.rf.predict))
+colour.pca.test[which(pca.rf.predict == "yes")] <- "green"
+colour.pca.test[which(pca.rf.predict=="no")] <- "red"
+
+
+# ok so this thing is working but it's ugly af and the legend doesn't work the
+# way i want...
+
+plot(pca.test.X, col = colour.pca.test,
+     xlab = "Principal Component 1", ylab = "Principal Component 2",
+     main = "Classification rule of the 2 principal components")
+
+# ...so I'm trying to do it ggplot way
+pca.test.X %>% ggplot(aes(x = Comp.1, y = Comp.2)) + 
+
 
