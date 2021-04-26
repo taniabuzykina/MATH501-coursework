@@ -342,11 +342,10 @@ pca.test.X <- new_churn[-num_subset, ] %>% subset(select = -churn)
 pca.test.Y <- churn_data[-num_subset, ] %>% subset(select = churn)
 pca.test.Y <- unlist(pca.test.Y)
 
-pca.random.tree <- randomForest(churn ~ ., data = new_churn, subset = num_subset, mtry = 2, 
+pca.random.tree <- randomForest(churn ~ ., data = new_churn, subset = num_subset, mtry = 1, 
                             importance = TRUE)
 #****
 # Calculate the test error for the obtained random forest and comment on it.
-# Visualise the resulting classification rule on the scatter plot of the two first principal components.
 #****
 
 pca.rf.predict <- predict(pca.random.tree, pca.test.X, type = "class")
@@ -360,6 +359,10 @@ error.PCA.RandomForest
 #* The test error is practically the same as the random forest run on all the
 #* predictors: 0.026
 
+#****
+# Visualise the resulting classification rule on the scatter plot of the two 
+# first principal components.
+#****
 
-
+#* Practical 5 (g)
 
