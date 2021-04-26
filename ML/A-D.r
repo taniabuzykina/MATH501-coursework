@@ -163,6 +163,7 @@ normalise <- function (inList){
 }
 
 train.X <- apply(train.X, 2, normalise)
+test.X <- apply(test.X, 2, normalise)
 
 leave.KNN <- function(K, train.X, train.Y){
   error <- 0

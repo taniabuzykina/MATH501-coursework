@@ -217,3 +217,19 @@ sprintf("Expected error: %f Test error: %f", min(errors), error.KNN)
 ```
 
 ### **Part (d)**
+**Using the training data set apply the random forest (bagging) method to construct a classifier to predict churn based on the four available predictors. Using the obtained random forest, comment on the importance of the four variables for predicting churn. Calculate the test error for the obtained random forest. Compare it to the test error found for the KNN classifier and provide an appropriate comment.**
+
+For random forest there's no need to use the created training set as it is due to the specifics of the function syntax (we just need to specify the training subset sequence, although optionally we can use the trainig subset itself). For us it is more convenient to work with dataframes so we will use the original churn_data.
+
+```{r}
+
+testing.X <- churn_data[-num_subset, ] %>% subset(select = -churn)
+testing.Y <- churn_data[-num_subset, ] %>% subset(select = churn)
+testing.Y <- unlist(testing.Y)
+
+```
+
+
+
+
+
