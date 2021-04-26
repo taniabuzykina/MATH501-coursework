@@ -18,7 +18,7 @@ knitr::opts_chunk$set(echo = TRUE)
 Solving tasks in the Machine Learning Section implied possessing basic knowledge of decision trees and KNN as well as the ability to perform Principal Component Analysis. In most cases, the solutions were provided in practical exercises.
 
 ### **Part (a)**
-*Present the data visually using box-and-whisker plots with a distinction for churn. Comment on the data in the context of the problem.*
+**Present the data visually using box-and-whisker plots with a distinction for churn. Comment on the data in the context of the problem.**
 
 ```{r, echo=FALSE, include=FALSE}
 library(readr)
@@ -102,7 +102,8 @@ Unfortunately, we don't have access to any other data hence we can only speculat
 
 
 ### **Part (b)**
-*Create a training set consisting of 350 randomly chosen data points and a test set consisting of the remaining 150 data points.*
+**Create a training set consisting of 350 randomly chosen data points and a test set consisting of the remaining 150 data points.**
+
 
 ```{r}
 
@@ -131,9 +132,8 @@ test.Y <- Y[-num_subset]
 ```
 
 ### **Part (c)** 
-*Using the training data set apply the K nearest neighbours method to construct a classifier to predict churn based on the four available predictors. Find the optimal K using leave-one-out cross-validation for the training data set. Calculate the test error for the classification rule obtained for the optimal K.*
+**Using the training data set apply the K nearest neighbours method to construct a classifier to predict churn based on the four available predictors. Find the optimal K using leave-one-out cross-validation for the training data set. Calculate the test error for the classification rule obtained for the optimal K.**
 
-----------------------------------------------------------
 Before actually applying KNN we need to normalise the dataset because our data has different units and is on a different scale. 
 
 Writing a function for normalising our predictors: substracting mean value and diving the result by the standard deviation.   
@@ -216,3 +216,4 @@ error.KNN <- (tab[1,2] + tab[2,1]) / sum(tab)
 sprintf("Expected error: %f Test error: %f", min(errors), error.KNN)
 ```
 
+### **Part (d)**
