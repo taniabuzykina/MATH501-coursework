@@ -28,11 +28,11 @@ churn_data %>% ggplot() +
 
 #COMMENTARY:
 
-# As we can see the customers who have not yet switched to a different operator have 
+# As we can see the customers who have not yet switched to a different operator have
 # lower average speed of upload in the internet in comparison with the customers
-# who have switched. In general, having higher uplink speed is a plus since it 
+# who have switched. In general, having higher uplink speed is a plus since it
 # improves the Internet phone/video call experience and it does no harm to the customers
-# Hence increasing uplink speed could not affect the customers' decision to switch to 
+# Hence increasing uplink speed could not affect the customers' decision to switch to
 # different operators
 
 # 2 boxplot with the mean time to load a webpage against an indicator whether a customer 
@@ -45,15 +45,15 @@ churn_data %>% ggplot() +
        color = "Switched")
 
 # COMMENTARY
-# We can observe a strong dependency between the time to load a webpage 
+# We can observe a strong dependency between the time to load a webpage
 # (which directly corresponds to the downlink speed) and an indicator whether customers
-# changed their operators. The average downlink speed was significantly lower for 
+# changed their operators. The average downlink speed was significantly lower for
 # the customers that have switched to a different provider than for those who haven't.
 # We can conclude this as the average time to load a webpage for those clients who
-# switched is nearly 200 units longer than of those who didn't.  
+# switched is nearly 200 units longer than of those who didn't.
 
-# 3 boxplot with how long a customer waited on the phone call for a customer 
-# service operator against an indicator whether a customer 
+# 3 boxplot with how long a customer waited on the phone call for a customer
+# service operator against an indicator whether a customer
 # switched to a different provider
 
 churn_data %>% ggplot() + 
@@ -64,16 +64,16 @@ churn_data %>% ggplot() +
 
 # COMMENTARY
 
-# Even though the average waiting time for a customer service operator is 
-# similar in both cases, overall the majority of of customers who switched to a 
+# Even though the average waiting time for a customer service operator is
+# similar in both cases, overall the majority of of customers who switched to a
 # different operator had to wait longer than the average and the customers who
-# haven't changed their provider. We can assume that the time spent by a 
-# customer on a call while they're waiting for a customer service operator to 
-# attend may impact their decision to switch to another operator although the 
+# haven't changed their provider. We can assume that the time spent by a
+# customer on a call while they're waiting for a customer service operator to
+# attend may impact their decision to switch to another operator although the
 # influence seems to be less significant compared to time to load a webpage.
 
 # 4 boxplot with the number of times a customer contacted the company
-# via a phone call against an indicator whether a customer 
+# via a phone call against an indicator whether a customer
 # switched to a different provider
 
 churn_data %>% ggplot() + 
@@ -84,12 +84,12 @@ churn_data %>% ggplot() +
 
 # COMMENTARY
 
-# we can observe that in average the customers that switched to a different 
+# we can observe that in average the customers that switched to a different
 # operator contacted the company via a phone call 1 time more often than others
 # The biggest number of contact attempts is 2 calls more than of the customers
-# who haven't changed their providers. Needs to be mentioned that some of 
+# who haven't changed their providers. Needs to be mentioned that some of
 # the customers who switched didn't contact the company even once. On the contrary
-# minority of the customers who haven't changed their provider also have more 
+# minority of the customers who haven't changed their provider also have more
 # than 5 and even 6 calls. Still it will be safe to assume that the number of calls
 # impacts the customers' decision to choose a different operator but its importance
 # is smaller the time to load a webpage.
@@ -97,18 +97,18 @@ churn_data %>% ggplot() +
 
 #*CONCLUSION
 #*
-#*Out of all the 4 factors that can possibly influence the 'churn' variable 
-#*time to load the webpage (which subsequently leads to the downlink speed) is the 
-#*most important one. Average phone call customer service waiting time doesn't 
-#*differ drastically but still is higher for customers who chose 
-#*different providers hence we could conclude that this aspect also plays its part in 
-#*the customers' decision as well as the number of phone calls to the company.
-#*The most suspicious variable is the upload speed - for those clients who changed
-#*their providers the uplink speed was actually higher but the downlink speed was lower
-#*(comparing to the customers who didn't change their provider) while normaly 
-#*the opposite should be the case (unless we're talking about 5G). 
-#*Unfortunately, we don't have access to any other data hence we can only speculate that 
-#*perhaps there are some issues with the provider's network. 
+# *Out of all the 4 factors that can possibly influence the 'churn' variable
+# *time to load the webpage (which subsequently leads to the downlink speed) is the
+# *most important one. Average phone call customer service waiting time doesn't
+# *differ drastically but still is higher for customers who chose
+# *different providers hence we could conclude that this aspect also plays its part in
+# *the customers' decision as well as the number of phone calls to the company.
+# *The most suspicious variable is the upload speed - for those clients who changed
+# *their providers the uplink speed was actually higher but the downlink speed was lower
+# *(comparing to the customers who didn't change their provider) while normaly
+# *the opposite should be the case (unless we're talking about 5G).
+# *Unfortunately, we don't have access to any other data hence we can only speculate that
+# *perhaps there are some issues with the provider's network.
 
 #----
 
