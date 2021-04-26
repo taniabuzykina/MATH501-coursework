@@ -9,25 +9,17 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r, echo=FALSE, include=FALSE}
+lib <- c('readr', 'tidyverse', 'class', 'GGally', 'randomForest', 'dplyr', 'ggplot2', 'MASS', 'R2jags', 'ggmcmc')
+lapply(lib, library, character.only = T)
+rm(lib)
+```
+
 # MATH501 Coursework
 
 ***Will please add some fancy description here***
 
 ## Machine Learning
-
-<<<<<<< HEAD
-### **Part (a)**
-**Present the data visually using box-and-whisker plots with a distinction for churn. Comment on the data in the context of the problem.**
-=======
-Solving tasks in the Machine Learning Section implied possessing basic knowledge of decision trees and KNN as well as the ability to perform Principal Component Analysis. In most cases, the solutions were provided in practical exercises.
->>>>>>> 8774ec9ee37420f06c915c1fc8d426183660150a
-
-```{r, echo=FALSE, include=FALSE}
-lib <- c('readr', 'tidyverse', 'class', 'GGally', 'randomForest', 'dplyr', 'ggplot2', 'MASS', 'R2jags', 'ggmcmc')
-lapply(lib, library, character.only = T)
-rm(lib)
-
-```
 
 ### **Part (a)**
 **Present the data visually using box-and-whisker plots with a distinction for churn. Comment on the data in the context of the problem.**
@@ -37,12 +29,10 @@ Reading our data in a dataframe:
 data_path <- "data/churndata.txt"
 churn_data <- read.csv(data_path, sep = " ")
 churn_data <- na.exclude(churn_data) # removing entries with NA values
-
 ```
 
 Plots:
 ```{r}
-
 churn_data %>% ggplot(aes(x = churn, y = upload, color = churn)) + 
  geom_boxplot() +
  labs (y = "Speed of upload", 
@@ -113,6 +103,7 @@ Unfortunately, we don't have access to any other data hence we can only speculat
 set.seed(1) # to make the results reproducible
 num_subset <- sample(nrow(churn_data), 350) # randomly choose 350 numbers out of 500
 ```
+
 Separating the data into predictors (X) and classifier (Y):
 ```{r}
 attach(churn_data)
@@ -162,7 +153,6 @@ head(train.X)
 ```
 
 Writing a function for KNN with leave-one-out cross-validation. Leave-one-out is a special case of k-fold cross validation. 
-
 ```{r}
 leave.KNN <- function(K, train.X, train.Y){
   error <- 0
@@ -195,6 +185,7 @@ Now trying to find the optimal K in a range of values between 1 to 30. Running t
 errors <- rep(0, 30) #trying with K from 1 to 30
 for (j in 1:30) errors[j] <- leave.KNN(j, train.X, train.Y)
 ```
+
 Plotting our errors
 ```{r}
 # plotting errors
