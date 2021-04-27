@@ -533,19 +533,20 @@ Comparing the KNN and Random Forest errors:
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\KeywordTok{sprintf}\NormalTok{(}\StringTok{"KNN Error: %f RandomForrest Error: %f"}\NormalTok{, error.KNN, error.RandomForest)}
+\KeywordTok{cat}\NormalTok{(}\StringTok{"KNN Error:"}\NormalTok{, error.KNN, }\StringTok{"}\CharTok{\textbackslash{}n}\StringTok{RandomForest Error:"}\NormalTok{, error.RandomForest)}
 \end{Highlighting}
 \end{Shaded}
 
 \begin{verbatim}
-## [1] "KNN Error: 0.086667 RandomForrest Error: 0.033333"
+## KNN Error: 0.08666667 
+## RandomForest Error: 0.03333333
 \end{verbatim}
 
 Random Forest method is more accurate than KNN with optimal K=1 with
-prediction error around 5\% lower than KNN. However, FUN FACT:
+prediction error much lower than KNN. However, FUN FACT:
 `keep.forest=FALSE' - this parameter removes the forest of trees from
-our random forest model. If this parameter is kept then it can
-substantially influence our prediction error.
+our random forest model. If this parameter is kept then it can heavily
+influence our prediction error.
 
 \hypertarget{parte}{%
 \subsection{\texorpdfstring{\textbf{Part(e)}}{Part(e)}}\label{parte}}
@@ -558,13 +559,221 @@ this visualisation, use colour coding to indiciate the churn. How much
 of the variation or information in the data is preserved in this plot?
 Provide an interpretation of the first two principal components.}
 
+Separating the predictors from the dataframe to perform the Principal
+Component Analysis and building a graph to determine the correlation of
+predictors and the data spread.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{churn_predictors <-}\StringTok{ }\NormalTok{churn_data[ , }\KeywordTok{c}\NormalTok{(}\StringTok{"upload"}\NormalTok{, }\StringTok{"webget"}\NormalTok{,}\StringTok{"enqcount"}\NormalTok{, }\StringTok{"callwait"}\NormalTok{)]}
+\KeywordTok{ggpairs}\NormalTok{(churn_predictors)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Report_files/figure-latex/unnamed-chunk-24-1.pdf}
+\emph{Can be discarded:} \emph{The `upload' and `webget' variables have
+the biggest correlation coefficient 0.661. Since the number is closer to
+1 we can assume that although weak there might be dependency between
+those 2 variables. The `upload' data has the majority of records with
+speed between 7.5 and 12.5 units, while most of `webget' entries' values
+rise up to 600 units. `callwait' and `enqcount' have second biggest but
+still a very weak correlation of 0.278. Most of the entries in
+`enqcount' variable have at least one call and spread up until 7 calls
+with the highest number of entries in 2 calls while `callwait' shows
+that most of the customers had to wait from 5 to 12.5 units (mins
+presumably) or on the contrary, we can observe that some of the
+customers waited for less than 2.5 units of time.}
+
+Overall the correlation between predictors is rather weak, `upload',
+`enqcount' and `callwait' variables have high variation. Correlation
+between `upload' and `webget' predictors is on a stronger side within
+the current dataset since 0.661 is rather closer to 1.
+
+Performing the PCA:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{churn_pca <-}\StringTok{ }\KeywordTok{princomp}\NormalTok{(churn_predictors, }\DataTypeTok{cor =} \OtherTok{TRUE}\NormalTok{)}
+\CommentTok{# the first column contains the names of cities so we exclude it.}
+\KeywordTok{summary}\NormalTok{(churn_pca)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Importance of components:
+##                           Comp.1    Comp.2    Comp.3     Comp.4
+## Standard deviation     1.2891552 1.1307782 0.8497143 0.58086584
+## Proportion of Variance 0.4154803 0.3196648 0.1805036 0.08435128
+## Cumulative Proportion  0.4154803 0.7351451 0.9156487 1.00000000
+\end{verbatim}
+
+New variable Comp.1 holds 41.5\% of variance in the data and has the
+deviation of 1.289, which is the biggest spread of the data. Comp. 2
+accounts for 31.9\% of the information variance giving a cumulative
+percentage of 73.5\%. The 2 components contain different information and
+created by using data from variables with certain weights.
+
+Let's create a table of new predictors, convert it to a dataframe and
+add a `churn' classifier column, this way it is more convenient to plot.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{new_churn <-}\StringTok{ }\NormalTok{churn_pca}\OperatorTok{$}\NormalTok{scores}
+\NormalTok{new_churn <-}\StringTok{ }\KeywordTok{data.frame}\NormalTok{(new_churn)}
+\NormalTok{new_churn <-}\StringTok{ }\NormalTok{new_churn }\OperatorTok{%>%}\StringTok{ }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{churn =}\NormalTok{ churn_data}\OperatorTok{$}\NormalTok{churn)}
+\end{Highlighting}
+\end{Shaded}
+
+In order to create a two-dimensional view of the data we'll use first 2
+principal components and `churn' variable to colour the points.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{new_churn }\OperatorTok{%>%}\StringTok{ }\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =}\NormalTok{ Comp}\FloatTok{.1}\NormalTok{, }\DataTypeTok{y =}\NormalTok{ Comp}\FloatTok{.2}\NormalTok{, }\DataTypeTok{color =}\NormalTok{ churn)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_point}\NormalTok{() }\OperatorTok{+}
+\StringTok{  }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{x =} \StringTok{"First Principal Component"}\NormalTok{,}
+       \DataTypeTok{y =} \StringTok{"Second Principal Component"}\NormalTok{,}
+       \DataTypeTok{color =} \StringTok{"Switched to a new operator"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{coord_fixed}\NormalTok{(}\DataTypeTok{ratio =} \DecValTok{1}\NormalTok{) }
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Report_files/figure-latex/unnamed-chunk-28-1.pdf}
+
+Together, the first two principal components explain 73.5\% of the
+variability.
+
+Building a plot to demonstrate how the new components were created.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{biplot}\NormalTok{(churn_pca, }\DataTypeTok{cex =} \KeywordTok{c}\NormalTok{(}\FloatTok{0.5}\NormalTok{, }\DecValTok{1}\NormalTok{),}
+       \DataTypeTok{xlab =} \StringTok{"Contribution to First Principal Component"}\NormalTok{,}
+       \DataTypeTok{ylab =} \StringTok{"Contribution to Second Principal Component"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Report_files/figure-latex/unnamed-chunk-29-1.pdf}
+Upload and webget predictors have positive contribution to first
+principal component. Therefore, the component focuses on a customer's
+Internet speed. Callwait and enqcount have negative contribution to
+second principal component and so we can conclude that this component
+focuses more on the customer support experience.
+
 \#\#\textbf{Part(f)} \textbf{Apply the random forest (bagging) method to
 construct a classifier to predict churn based on the two first principal
 components as predictors. In doing so, use the split of the data into a
 training and test set (you may use the same indices as in part (b)).
 Calculate the test error for the obtained random forest and comment on
 it. Visualise the resulting classification rule on the scatter plot of
-the two first principal components.}
+the two first principal components.}
+
+Forming a new dataset from 2 principal components with `churn'
+classifier and preparing the data before using it in our random forest
+model. Separating a test set.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{new_churn <-}\StringTok{ }\NormalTok{new_churn }\OperatorTok{%>%}\StringTok{ }\KeywordTok{subset}\NormalTok{(}\DataTypeTok{select =} \KeywordTok{c}\NormalTok{(Comp}\FloatTok{.1}\NormalTok{, Comp}\FloatTok{.2}\NormalTok{, churn))}
+\NormalTok{pca.test.X <-}\StringTok{ }\NormalTok{new_churn[}\OperatorTok{-}\NormalTok{num_subset, ] }\OperatorTok{%>%}\StringTok{ }\KeywordTok{subset}\NormalTok{(}\DataTypeTok{select =} \OperatorTok{-}\NormalTok{churn)}
+\NormalTok{pca.test.Y <-}\StringTok{ }\NormalTok{churn_data[}\OperatorTok{-}\NormalTok{num_subset, ] }\OperatorTok{%>%}\StringTok{ }\KeywordTok{subset}\NormalTok{(}\DataTypeTok{select =}\NormalTok{ churn)}
+\NormalTok{pca.test.Y <-}\StringTok{ }\KeywordTok{unlist}\NormalTok{(pca.test.Y)}
+\end{Highlighting}
+\end{Shaded}
+
+Training our random forest model. The mtry=1 as square root of 2 (number
+of predictors in our dataset) is approximately 1.4 hence closer to 1.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{pca.random.tree <-}\StringTok{ }\KeywordTok{randomForest}\NormalTok{(churn }\OperatorTok{~}\StringTok{ }\NormalTok{., }\DataTypeTok{data =}\NormalTok{ new_churn, }\DataTypeTok{subset =}\NormalTok{ num_subset, }\DataTypeTok{mtry =} \DecValTok{1}\NormalTok{, }
+                            \DataTypeTok{importance =} \OtherTok{TRUE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+Testing our trained model and calculating the test error.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{pca.rf.predict <-}\StringTok{ }\KeywordTok{predict}\NormalTok{(pca.random.tree, pca.test.X, }\DataTypeTok{type =} \StringTok{"class"}\NormalTok{)}
+\NormalTok{tab <-}\StringTok{ }\KeywordTok{table}\NormalTok{(pca.rf.predict, pca.test.Y) }\CommentTok{# confusion matrix}
+
+\NormalTok{error.PCA.RandomForest <-}\StringTok{ }\NormalTok{(tab[}\DecValTok{1}\NormalTok{,}\DecValTok{2}\NormalTok{] }\OperatorTok{+}\StringTok{ }\NormalTok{tab[}\DecValTok{2}\NormalTok{,}\DecValTok{1}\NormalTok{]) }\OperatorTok{/}\StringTok{ }\KeywordTok{sum}\NormalTok{(tab)}
+\KeywordTok{cat}\NormalTok{(}\StringTok{"KNN Error:"}\NormalTok{, error.KNN, }\StringTok{"}\CharTok{\textbackslash{}n}\StringTok{RandomForest Error:"}\NormalTok{, error.RandomForest, }\StringTok{"}\CharTok{\textbackslash{}n}\StringTok{RandomForest PCA Error:"}\NormalTok{, error.PCA.RandomForest)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## KNN Error: 0.08666667 
+## RandomForest Error: 0.03333333 
+## RandomForest PCA Error: 0.2066667
+\end{verbatim}
+
+As we can see, the random forest model trained on the data formed from 2
+new principal components predicts the `churn' classifier with 10\%
+bigger error. Our assumption is that this happens because the two
+components altogether hold only 3/4 of the data variation. Perhaps if we
+could train our model on all 4 components the results would have been
+better but then there was no sense in doing principal component analysis
+in the first place. Since principal component analysis is good for
+reducing dimensionality by identifying the most important predictors and
+those that could be got rid of we can logically expect that it will
+influence the resulting model test error, the question is whether this
+change was positive or negative. Based solely on the test error we can
+assume that discarding 2 other principal components wasn't a good idea.
+One more suggestion on why the PCA didn't work well here is mentioned in
+the conclusions.
+
+Visalising the resulting predicted classifiers with two principal
+components on the scatter plot.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{pca.test.X }\OperatorTok{%>%}\StringTok{ }\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =}\NormalTok{ Comp}\FloatTok{.1}\NormalTok{, }\DataTypeTok{y =}\NormalTok{ Comp}\FloatTok{.2}\NormalTok{, }\DataTypeTok{color =}\NormalTok{ pca.rf.predict)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_point}\NormalTok{() }\OperatorTok{+}
+\StringTok{  }\KeywordTok{coord_fixed}\NormalTok{(}\DataTypeTok{ratio =} \DecValTok{1}\NormalTok{) }\OperatorTok{+}\StringTok{ }
+\StringTok{  }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{x =} \StringTok{"Principal Component 1"}\NormalTok{, }\DataTypeTok{y =} \StringTok{"Principal Component 2"}\NormalTok{,}
+       \DataTypeTok{color =} \StringTok{"Predicted 'churn' classifier"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Report_files/figure-latex/unnamed-chunk-33-1.pdf}
+
+We can observe that most of the customers who have decided to switch to
+a different operator have positive values of principal component 1 which
+focuses on Internet speed factors like `upload' and `webget'.
+
+CONCLUSIONS and ISSUES WITH THE DATASET
+
+The data used in this section was fundamentally wrong to begin with but
+not in terms of scale or missing values or even sparsity of the data.
+The problem lies in the meaning behind the predictors. We'd say that
+there's nothing wrong with Principal Component 2: both enqcount and
+callwait predictors (that contribute to this component) indicate the
+customer service quality. The bigger their values are the more negative
+experience a customer gets because no one wants to call to their
+operator with inquiries often or wait on the line for too long before a
+support agent gets on their call. However, let's take a closer look at
+the principal component 1 together with upload and webget predictors.
+webget indicates the time which takes for a client to load a webpage,
+which directly means a downlink speed: the bigger the `webget' value is
+the lower is the downlink Internet speed so higher webget values
+actually logically carry negative meaning. Now, upload predictor is
+easier - we have classic `the more the better' here since it indicates
+the uplink speed directly. BUT both of those predictors contribute to
+component 1 positively, which creates contradiction - normally you would
+want the `webget' to have a negative contribution because the smaller
+this value is the better Internet speed a customer has (basically the
+same case with enqcount and callwait for component 2).
+
+We can't blame PCA function here - we can only blame the nature of the
+provided data because it is as confusing as it can be. Instead, it would
+be better to have the `webget' predictor converted to the same unit as
+`upload' predictor. Unfortunately, the units of the predictors were not
+provided which hopefully didn't influence our machine learning models
+but is very crucial for understanding the data and any data scientists
+should understand the data before actually working with it. Despite
+that, working with this dataset was a great experience.
 
 \hypertarget{statistical-modelling}{%
 \section{Statistical Modelling}\label{statistical-modelling}}
@@ -626,7 +835,7 @@ Plot these proportions
 \end{Highlighting}
 \end{Shaded}
 
-\includegraphics{Report_files/figure-latex/unnamed-chunk-27-1.pdf}
+\includegraphics{Report_files/figure-latex/unnamed-chunk-37-1.pdf}
 
 \textbf{What can you conclude from the plot?}
 
@@ -725,7 +934,7 @@ compare the two plots.}
 \end{Highlighting}
 \end{Shaded}
 
-\includegraphics{Report_files/figure-latex/unnamed-chunk-30-1.pdf}
+\includegraphics{Report_files/figure-latex/unnamed-chunk-40-1.pdf}
 
 \textbf{What do you conclude?}
 

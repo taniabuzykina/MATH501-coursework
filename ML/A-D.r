@@ -199,6 +199,7 @@ for (j in 1:30) errors[j] <- leave.KNN(j, train.X, train.Y)
 plot(errors, xlab="K", ylab = "Test error")
 
 
+
 #finding optimal K as an index of the first smallest error value
 optim.K <- which.min(errors)
 optim.K

@@ -148,7 +148,7 @@ Now our predictors have values in the same range.
 head(train.X)
 ```
 
-Writing a function for KNN with leave-one-out cross-validation. Leave-one-out is a special case of k-fold cross validation. 
+Writing a custom function for KNN with leave-one-out cross-validation. Leave-one-out is a special case of k-fold cross validation. 
 ```{r}
 leave.KNN <- function(K, train.X, train.Y){
   error <- 0
@@ -197,10 +197,9 @@ Finding optimal K as an index of the first smallest error value
 ```{r}
 optim.K <- which.min(errors)
 ```
-
-Now running KNN with the optimal K found from the leave-one-out cross-validation. 
+Now running KNN with the optimal K. 
 ```{r}
-def.knn <- knn(train = train.X, test = test.X, cl = train.Y, k = optim.K) # yep that's it
+def.knn <- knn(train = train.X, test = test.X, cl = train.Y, k = optim.K) 
 tab <- table(def.knn, test.Y) # confusion table
 ```
 
@@ -209,6 +208,27 @@ Calculating the error using falsely predicted churn values
 error.KNN <- (tab[1,2] + tab[2,1]) / sum(tab) 
 sprintf("Expected error: %f Test error: %f", min(errors), error.KNN)
 ```
+
+***Alternative solution***
+
+Instead of writing a custom take on leave-one-out approach we can use knn.cv function. The issue is that this function doesn't take a test set of predictors as an argument so we can calculate error only on the original training set.
+```{r}
+alt.KNN <- function(k){
+  res.knn.cv <- knn.cv(train.X, train.Y, k = 1)
+  tab <- table(res.knn.cv, train.Y) # confusion matrix
+  error <- (tab[1,2] + tab[2,1]) / sum(tab)
+  return(error)
+}
+```
+
+Finding the optimal K in the same way:
+```{r}
+errors2 <- rep(0, 30) #trying with K from 1 to 30
+for (j in 1:30) errors2[j] <- alt.KNN(j) # loop to find errors for K = 1:30
+optim.K2 <- which.min(errors2) # finding K with the smallest error
+optim.K2
+```
+We can see that in both cases optimal K=1.
 
 ## **Part (d)**
 **Using the training data set apply the random forest (bagging) method to construct a classifier to predict churn based on the four available predictors. Using the obtained random forest, comment on the importance of the four variables for predicting churn. Calculate the test error for the obtained random forest. Compare it to the test error found for the KNN classifier and provide an appropriate comment.**
