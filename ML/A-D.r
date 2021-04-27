@@ -14,7 +14,7 @@ library(randomForest)
 data_path <- "./data/churndata.txt"
 churn_data <- read.csv(data_path, sep = " ")
 churn_data <- na.exclude(churn_data)
-
+churn_data$churn <- as.factor(churn_data$churn)
 attach(churn_data)
 
 
@@ -237,7 +237,7 @@ random.tree <- randomForest(churn ~ ., data = churn_data, subset = num_subset, m
 #* variables for predicting churn. 
 # *****
 
-varImpPlot(random.tree, main = "Random Forrest Variable Importance")
+varImpPlot(random.tree, main = "Random Forest Variable Importance")
 
 #* COMMENTARY
 

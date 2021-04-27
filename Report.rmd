@@ -27,6 +27,12 @@ Reading our data in a dataframe:
 data_path <- "data/churndata.txt"
 churn_data <- read.csv(data_path, sep = " ")
 churn_data <- na.exclude(churn_data) # removing entries with NA values
+# converting classifier to a factor:
+churn_data$churn <- as.factor(churn_data$churn) 
+```
+The data includes 4 predictors - 'webget', 'callwait', 'upload' and 'enqcount' and a classifier 'churn' which identifies whether a client has switched to a new operator or not.
+```{r}
+head(churn_data)
 ```
 
 Boxplot with average speed of upload against an indicator whether a customer switched to a different provider:
@@ -214,21 +220,45 @@ testing.Y <- churn_data[-num_subset, ] %>% subset(select = churn)
 testing.Y <- unlist(testing.Y)
 ```
 
+```{r, echo=FALSE}
+# getting rid of the redundant variables
+rm(X, Y, train.X, test.X, test.Y, train.Y)
+```
 
+Constructing a random tree classifier based on 4 predictors. The 'mtry' variable normally can be equal to square root of the original number of predictors, hence mtry=2. 
+```{r}
+random.tree <- randomForest(churn ~ ., data = churn_data, subset = num_subset, mtry = 2, importance = TRUE)
+```
 
+We could use a different notation and specify the training set directly in randomForest function but using our subset sequence instead will save  extra variables in global environment so we went for the option above.
 
+Plotting mean decrease accuracy and mean decrease gini measures to identify the most important variables.
 
+```{r}
+varImpPlot(random.tree, main = "Random Forrest Variable Importance")
+```
 
+The Mean Decrease Accuracy plot expresses how much accuracy the model losses by excluding each variable. The more the accuracy suffers, the more important the variable is for the successful classification.The mean decrease in Gini coefficient is a measure of how each variable contributes to the homogeneity of the nodes and leaves in the resulting random forest. The higher the value of mean decrease accuracy or mean decrease Gini score, the higher the importance of the variable in the model.[(Martinez-Taboada, F. & Redondo, J.I., 2020) Variable importance plot (mean decrease accuracy and mean decrease Gini)](https://doi.org/10.1371/journal.pone.0230799.g002) In our case, both MeanDecreaseAccuracy and MeanDecreaseGini measures indicate that 'webget' is ultimately the most important variable. The least important ones turned out to be 'callwait' followed by 'upload'. 'enqcount' (the number of customers enquiry calls to an operator) is the second most important predictor.
 
+Calculating the test error for random forest classifier based on the confusion matrix produced from correctly and wrongly classified test entries: 
+```{r}
+rf.predict <- predict(random.tree, testing.X, type = "class")
+tab <- table(rf.predict, testing.Y) # confusion matrix
 
+error.RandomForest <- (tab[1,2] + tab[2,1]) / sum(tab)
+```
 
+Comparing the KNN and Random Forest errors:
+```{r}
+sprintf("KNN Error: %f RandomForrest Error: %f", error.KNN, error.RandomForest)
+```
+Random Forest method is more accurate than KNN with optimal K=1 with prediction error around 5% lower than KNN. However, FUN FACT: 'keep.forest=FALSE' - this parameter removes the forest of trees from our random forest model. If this parameter is kept then it can substantially influence our prediction error. 
 
+## **Part(e)**
+**Using the entire data set (training set and test set combined), perform Principal Component Analysis for the four variables: upload, webget, enqcount and callwait. Comment on the results. Using principal components, create the “best” two dimensional view of the data set. In this visualisation, use colour coding to indiciate the churn. How much of the variation or information in the data is preserved in this plot? Provide an interpretation of the first two principal components.**
 
-
-
-
-
-
+##**Part(f)**
+**Apply the random forest (bagging) method to construct a classifier to predict churn based on the two first principal components as predictors. In doing so, use the split of the data into a training and test set (you may use the same indices as in part (b)). Calculate the test error for the obtained random forest and comment on it. Visualise the resulting classification rule on the scatter plot of the two first principal components.**
 
 # Statistical Modelling
 
