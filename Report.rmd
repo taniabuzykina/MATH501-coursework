@@ -231,9 +231,10 @@ optim.K2
 We can see that in both cases optimal K=1.
 
 ## **Part (d)**
+
 **Using the training data set apply the random forest (bagging) method to construct a classifier to predict churn based on the four available predictors. Using the obtained random forest, comment on the importance of the four variables for predicting churn. Calculate the test error for the obtained random forest. Compare it to the test error found for the KNN classifier and provide an appropriate comment.**
 
-For random forest there's no need to use the created training set as it is due to the specifics of the function syntax (we just need to specify the training subset sequence, although optionally we can use the trainig subset itself). For us it is more convenient to work with dataframes so we will use the original churn_data.
+For random forest there's no need to use the created training set as it is due to the specifics of the function syntax (we just need to specify the training subset sequence, although optionally we can use the training subset itself). For us it is more convenient to work with dataframes so we will use the original churn_data.
 ```{r}
 testing.X <- churn_data[-num_subset, ] %>% subset(select = -churn)
 testing.Y <- churn_data[-num_subset, ] %>% subset(select = churn)
@@ -255,7 +256,7 @@ We could use a different notation and specify the training set directly in rando
 Plotting mean decrease accuracy and mean decrease gini measures to identify the most important variables.
 
 ```{r}
-varImpPlot(random.tree, main = "Random Forrest Variable Importance")
+varImpPlot(random.tree, main = "Random Forest Variable Importance")
 ```
 
 The Mean Decrease Accuracy plot expresses how much accuracy the model losses by excluding each variable. The more the accuracy suffers, the more important the variable is for the successful classification.The mean decrease in Gini coefficient is a measure of how each variable contributes to the homogeneity of the nodes and leaves in the resulting random forest. The higher the value of mean decrease accuracy or mean decrease Gini score, the higher the importance of the variable in the model.[(Martinez-Taboada, F. & Redondo, J.I., 2020) Variable importance plot (mean decrease accuracy and mean decrease Gini)](https://doi.org/10.1371/journal.pone.0230799.g002) In our case, both MeanDecreaseAccuracy and MeanDecreaseGini measures indicate that 'webget' is ultimately the most important variable. The least important ones turned out to be 'callwait' followed by 'upload'. 'enqcount' (the number of customers enquiry calls to an operator) is the second most important predictor.
@@ -269,13 +270,14 @@ error.RandomForest <- (tab[1,2] + tab[2,1]) / sum(tab)
 ```
 
 Comparing the KNN and Random Forest errors:
-```{r}
-cat("KNN Error:", error.KNN, "\nRandomForest Error:", error.RandomForest)
+```{r, echo=FALSE}
+cat("KNN Error:", error.KNN)
+cat("RandomForest Error:", error.RandomForest)
 ```
 Random Forest method is more accurate than KNN with optimal K=1 with prediction error much lower than KNN. However, FUN FACT: 'keep.forest=FALSE' - this parameter removes the forest of trees from our random forest model. If this parameter is kept then it can heavily influence our prediction error. 
 
 ## **Part(e)**
-**Using the entire data set (training set and test set combined), perform Principal Component Analysis for the four variables: upload, webget, enqcount and callwait. Comment on the results. Using principal components, create the “best” two dimensional view of the data set. In this visualisation, use colour coding to indiciate the churn. How much of the variation or information in the data is preserved in this plot? Provide an interpretation of the first two principal components.**
+**Using the entire data set (training set and test set combined), perform Principal Component Analysis for the four variables: upload, webget, enqcount and callwait. Comment on the results. Using principal components, create the “best” two dimensional view of the data set. In this visualisation, use colour coding to indiciate the churn. How much of the variation or information in the data is preserved in this plot? Provide an interpretation of the first two principal components.**
 
 Separating the predictors from the dataframe to perform the Principal Component Analysis and building a graph to determine the correlation of predictors and the data spread.
 
@@ -283,7 +285,7 @@ Separating the predictors from the dataframe to perform the Principal Component 
 churn_predictors <- churn_data[ , c("upload", "webget","enqcount", "callwait")]
 ggpairs(churn_predictors)
 ```
-*Can be discarded:*
+*CAN BE DISCARDED IF CRITICAL:*
 *The 'upload' and 'webget' variables have the biggest correlation coefficient 0.661. Since the number is closer to 1 we can assume that although weak there might be dependency between those 2 variables. The 'upload' data has the majority of records with speed between 7.5 and 12.5 units, while most of 'webget' entries' values rise up to 600 units. 'callwait' and 'enqcount' have second biggest but still a very weak correlation of 0.278. Most of the entries in 'enqcount' variable have at least one call and spread up until 7 calls with the highest number of entries in 2 calls while 'callwait' shows that most of the customers had to wait from 5 to 12.5 units (mins presumably) or on the contrary, we can observe that some of the customers waited for less than 2.5 units of time.*
 
 Overall the correlation between predictors is rather weak, 'upload', 'enqcount' and 'callwait' variables have high variation. Correlation between 'upload' and 'webget' predictors is on a stronger side within the current dataset since 0.661 is rather closer to 1.
@@ -352,9 +354,13 @@ Testing our trained model and calculating the test error.
 ```{r}
 pca.rf.predict <- predict(pca.random.tree, pca.test.X, type = "class")
 tab <- table(pca.rf.predict, pca.test.Y) # confusion matrix
-
 error.PCA.RandomForest <- (tab[1,2] + tab[2,1]) / sum(tab)
-cat("KNN Error:", error.KNN, "\nRandomForest Error:", error.RandomForest, "\nRandomForest PCA Error:", error.PCA.RandomForest)
+```
+Displaying all 3 errors:
+```{r, echo=FALSE}
+cat("KNN Error:", error.KNN) 
+cat("RandomForest Error:", error.RandomForest) 
+cat("RandomForest PCA Error:", error.PCA.RandomForest)
 ```
 As we can see, the random forest model trained on the data formed from 2 new principal components predicts the 'churn' classifier with 10% bigger error. Our assumption is that this happens because the two components altogether hold only 3/4 of the data variation. Perhaps if we could train our model on all 4 components the results would have been better but then there was no sense in doing principal component analysis in the first place. Since principal component analysis is good for reducing dimensionality by identifying the most important predictors and those that could be got rid of we can logically expect that it will influence the resulting model test error, the question is whether this change was positive or negative. Based solely on the test error we can assume that discarding 2 other principal components wasn't a good idea. One more suggestion on why the PCA didn't work well here is mentioned in the conclusions. 
 
@@ -370,7 +376,7 @@ pca.test.X %>% ggplot(aes(x = Comp.1, y = Comp.2, color = pca.rf.predict)) +
 
 We can observe that most of the customers who have decided to switch to a different operator have positive values of principal component 1 which focuses on Internet speed factors like 'upload' and 'webget'.
 
-CONCLUSIONS and ISSUES WITH THE DATASET
+**CONCLUSIONS AND ISSUES WITH THE DATASET**
 
 The data used in this section was flawed to begin with but not in terms of scale or missing values or even sparsity of the data. The problem lies in the meaning behind the predictors. We'd say that there's nothing wrong with Principal Component 2: both enqcount and callwait predictors (that contribute to this component) indicate the customer service quality. The bigger their values are the more negative experience a customer gets because no one wants to call to their operator with inquiries often or wait on the line for too long before a support agent gets on their call. 
 However, let's take a closer look at the principal component 1 together with upload and webget predictors. webget indicates the time which takes for a client to load a webpage, which directly means a downlink speed: the bigger the 'webget' value is the lower is the downlink Internet speed so higher webget values actually logically carry negative meaning. Now, upload predictor is easier - we have classic 'the more the better' here since it indicates the uplink speed directly. BUT both of those predictors contribute to component 1 positively, which creates contradiction - normally you would want the 'webget' to have a negative contribution because the smaller this value is the better Internet speed a customer has (basically the same case with enqcount and callwait for component 2).   
