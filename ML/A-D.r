@@ -281,30 +281,30 @@ churn_predictors <- churn_data[ , c("upload", "webget","enqcount", "callwait")]
 ggpairs(churn_predictors)
 
 #* COMMENTARY
-#* The 'upload' and 'webget' variables have the biggest correlation coefficient
-#* 0.661. Since the is closer to 1 we can assume that although weak but there
-#* might be dependency between those 2 variables. The 'upload' data has the 
-#* majority of records with speed between 7.5 and 12.5 units, while most of 'webget'
-#* entries' values rise up to 600 units. 'callwait' and 'enqcount' have second biggest
-#* but still a very weak correlation of 0.278. Most of the entries in 'enqcount'
-#* variable have at least one call and spread up until 7 calls with the highest 
-#* number of entries in 2 calls while 'callwait' shows that most of the customers 
-#* had to wait from 5 to 12.5 units (mins presumably) or on the contrary, we can
-#* observe that some of the customers waited for less than 2.5 units of time.
-#* Overall the correlation between predictors is rather weak, 'upload', 'enqcount' 
-#* and 'callwait' variables have high variation. Correlation between 'upload' and 
-#* 'webget' can be considered as strong in the current dataset since it's closer to 1. 
+# * The 'upload' and 'webget' variables have the biggest correlation coefficient
+# * 0.661. Since the is closer to 1 we can assume that although weak but there
+# * might be dependency between those 2 variables. The 'upload' data has the
+# * majority of records with speed between 7.5 and 12.5 units, while most of 'webget'
+# * entries' values rise up to 600 units. 'callwait' and 'enqcount' have second biggest
+# * but still a very weak correlation of 0.278. Most of the entries in 'enqcount'
+# * variable have at least one call and spread up until 7 calls with the highest
+# * number of entries in 2 calls while 'callwait' shows that most of the customers
+# * had to wait from 5 to 12.5 units (mins presumably) or on the contrary, we can
+# * observe that some of the customers waited for less than 2.5 units of time.
+# * Overall the correlation between predictors is rather weak, 'upload', 'enqcount'
+# * and 'callwait' variables have high variation. Correlation between 'upload' and
+# * 'webget' can be considered as strong in the current dataset since it's closer to 1.
 
 churn_pca <- princomp(churn_predictors, cor = TRUE)
 # the first column contains the names of cities so we exclude it.
 summary(churn_pca)
 
 # COMMENTARY
-#* New variable Comp.1 holds 41.5% of variance in the data and has the deviation 
-#* of 1.289, which is the biggest spread of the data. Comp. 2 accounts for 31.9%
-#* of the information variance giving a cumulative percentage of 73.5%.
-#* The 2 components contain different information and created by using data from 
-#* variables with certain weights.  
+# * New variable Comp.1 holds 41.5% of variance in the data and has the deviation
+# * of 1.289, which is the biggest spread of the data. Comp. 2 accounts for 31.9%
+# * of the information variance giving a cumulative percentage of 73.5%.
+# * The 2 components contain different information and created by using data from
+# * variables with certain weights.
 
 new_churn <- churn_pca$scores # creating a table of new predictors
 rm(churn_predictors)

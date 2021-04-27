@@ -257,8 +257,73 @@ Random Forest method is more accurate than KNN with optimal K=1 with prediction 
 ## **Part(e)**
 **Using the entire data set (training set and test set combined), perform Principal Component Analysis for the four variables: upload, webget, enqcount and callwait. Comment on the results. Using principal components, create the “best” two dimensional view of the data set. In this visualisation, use colour coding to indiciate the churn. How much of the variation or information in the data is preserved in this plot? Provide an interpretation of the first two principal components.**
 
+Separating the predictors from the dataframe to perform the Principal Component Analysis and building a graph to determine the correlation of predictors and the data spread.
+
+```{r}
+churn_predictors <- churn_data[ , c("upload", "webget","enqcount", "callwait")]
+ggpairs(churn_predictors)
+```
+*Can be discarded:*
+*The 'upload' and 'webget' variables have the biggest correlation coefficient 0.661. Since the number is closer to 1 we can assume that although weak there might be dependency between those 2 variables. The 'upload' data has the majority of records with speed between 7.5 and 12.5 units, while most of 'webget' entries' values rise up to 600 units. 'callwait' and 'enqcount' have second biggest but still a very weak correlation of 0.278. Most of the entries in 'enqcount' variable have at least one call and spread up until 7 calls with the highest number of entries in 2 calls while 'callwait' shows that most of the customers had to wait from 5 to 12.5 units (mins presumably) or on the contrary, we can observe that some of the customers waited for less than 2.5 units of time.*
+
+Overall the correlation between predictors is rather weak, 'upload', 'enqcount' and 'callwait' variables have high variation. Correlation between 'upload' and 'webget' predictors is on a stronger side within the current dataset since 0.661 is rather closer to 1.
+
+Performing the PCA:
+```{r}
+churn_pca <- princomp(churn_predictors, cor = TRUE)
+# the first column contains the names of cities so we exclude it.
+summary(churn_pca)
+```
+
+New variable Comp.1 holds 41.5% of variance in the data and has the deviation of 1.289, which is the biggest spread of the data. Comp. 2 accounts for 31.9% of the information variance giving a cumulative percentage of 73.5%. The 2 components contain different information and created by using data from variables with certain weights.
+
+```{r, echo=FALSE}
+rm(churn_predictors) # cleaning up
+```
+
+Let's create a table of new predictors, convert it to a dataframe and add a 'churn' classifier column, this way it is more convenient to plot.
+
+```{r}
+new_churn <- churn_pca$scores
+new_churn <- data.frame(new_churn)
+new_churn <- new_churn %>% mutate(churn = churn_data$churn)
+```
+In order to create a two-dimensional view of the data we'll use first 2 principal components and 'churn' variable to colour the points. 
+
+```{r}
+new_churn %>% ggplot(aes(x = Comp.1, y = Comp.2, color = churn)) +
+  geom_point() +
+  labs(x = "First Principal Component",
+       y = "Second Principal Component",
+       color = "Switched to a new operator") +
+  coord_fixed(ratio = 1) 
+```
+
+Together, the first two principal components explain 73.5% of the variability.
+
+Building a plot to demonstrate how the new components were created.
+```{r}
+biplot(churn_pca, cex = c(0.5, 1),
+       xlab = "Contribution to First Principal Component",
+       ylab = "Contribution to Second Principal Component")
+```
+Upload and webget predictors have positive contribution to first principal component. Therefore, the component focuses on a customer's Internet speed. Callwait and enqcount have negative contribution to second principal component and so we can conclude that this component focuses more on the customer support experience. 
+
+
 ##**Part(f)**
 **Apply the random forest (bagging) method to construct a classifier to predict churn based on the two first principal components as predictors. In doing so, use the split of the data into a training and test set (you may use the same indices as in part (b)). Calculate the test error for the obtained random forest and comment on it. Visualise the resulting classification rule on the scatter plot of the two first principal components.**
+
+Forming a new dataset from 2 principal components with 'churn' classifier and preparing the data before using it in our random forest model.
+
+```{r}
+new_churn <- new_churn %>% subset(select = c(Comp.1, Comp.2, churn))
+pca.test.X <- new_churn[-num_subset, ] %>% subset(select = -churn)
+pca.test.Y <- churn_data[-num_subset, ] %>% subset(select = churn)
+pca.test.Y <- unlist(pca.test.Y)
+```
+
+
+
 
 # Statistical Modelling
 
