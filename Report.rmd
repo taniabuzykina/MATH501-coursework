@@ -604,12 +604,37 @@ Plot_E <-
   geom_line(aes(x=Dose_seq_log,y=p_lower_log),data=predictions_df_log,colour="red")+
   # Add the upper confidence limits
   geom_line(aes(x=Dose_seq_log,y=p_upper_log),data=predictions_df_log,colour="red")+
-  labs(x = "Log of Dose (mg/mL)",y = "% of patients getting better") +
+  labs(x = "Log of Dose (mg/mL)",y = "% of patients getting better", subtitle="Plot E")+
   scale_y_continuous(breaks=c(0,0.25,0.5,0.75,1),minor_breaks=NULL,limits=c(0,1))
 ```
 
 ```{r, echo=FALSE}
-Plot_E
+#Alternative view of Plot A
+Dose_seq <- seq(from = min(Dose), to = max(Dose), length = 20)
+eta_seq <- predict(m,newdata = data.frame(Dose = Dose_seq),se.fit = TRUE)
+p_seq <- exp(eta_seq$fit) / (1 + exp(eta_seq$fit))
+eta_seq_ci <- cbind(eta_seq$fit - 2 * eta_seq$se.fit, # Lower limits
+                    eta_seq$fit + 2 * eta_seq$se.fit) # Upper limits
+p_seq_ci <- exp(eta_seq_ci) / (1 + exp(eta_seq_ci))
+predictions_df <- data.frame(Dose_seq,  
+                             p_seq = p_seq, # Estimated values of p
+                             p_lower = p_seq_ci[,1], # Lower confidence limits
+                             p_upper = p_seq_ci[,2]) # Upper confidence limits
+
+Plot_A_Alt <- 
+  ggplot(experiment_df, aes(x = Dose, y = Proportion_better)) +
+  geom_point() +
+  geom_hline(yintercept=.25,linetype='dotted',col='blue')+
+  geom_hline(yintercept=.75,linetype='dotted',col='blue')+
+  geom_line(aes(x = Dose_seq,y = p_seq),data = predictions_df,colour = "red")+
+  geom_line(aes(x=Dose_seq,y=p_lower),data=predictions_df,colour="red")+
+  geom_line(aes(x=Dose_seq,y=p_upper),data=predictions_df,colour="red")+
+  labs(x = "Dose (mg/mL)",y = "% of patients getting better",subtitle="Plot A Alt")+
+  scale_y_continuous(breaks=c(0,0.25,0.5,0.75,1),minor_breaks=NULL,limits=c(0,1))
+```
+
+```{r, echo=FALSE}
+grid.arrange(Plot_A_Alt, Plot_E, ncol = 2)
 ```
 
 ### In addition, perform a suitable statistical test to check whether the logarithmic model is adequate. State your hypotheses and conclusions carefully.

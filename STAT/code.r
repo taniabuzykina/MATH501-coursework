@@ -75,10 +75,9 @@ confint(m)
 # Visualization of the fitted model
 
 # Number of Dose points at which to predict
-N <- 20
 
 # Sequence of Dose values
-Dose_seq <- seq(from = min(Dose), to = max(Dose), length = N)
+Dose_seq <- seq(from = min(Dose), to = max(Dose), length = 20)
 
 # Predict beta_0 + beta_1 x = beta_0 + beta_1 Dose at these values
 # The predicted values are given by hat beta_0 + hat beta_1 Dose
