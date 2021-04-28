@@ -36,12 +36,12 @@ The data includes 4 predictors - 'webget', 'callwait', 'upload' and 'enqcount' a
 head(churn_data)
 ```
 
-**Boxplot with average speed of upload against an indicator whether a customer switched to a different provider**
-```{r, fig.height = 2.75}
+<!-- **Boxplot with average speed of upload against an indicator whether a customer switched to a different provider** -->
+```{r, fig.height = 2.75, echo=FALSE, include=FALSE}
 churn_data %>% ggplot(aes(x = churn, y = upload, color = churn)) + geom_boxplot() +
  labs (y = "Speed of upload",x = "Switched to a new provider",color = "Switched")
 ```
-From the boxplot above we can see that customers who have not switched to a different operator have lower average upload speeds of approximately 10.5 units in comparison with the customers who have switched and had average upload speed of around 13 units. In general, having a higher uplink speed is a plus since it improves the internet phone/video call experience and it does no harm to the customers. Hence, increasing uplink speed would appear to not affect the customers' decision to switch to different operators.  
+<!-- From the boxplot above we can see that customers who have not switched to a different operator have lower average upload speeds of approximately 10.5 units in comparison with the customers who have switched and had average upload speed of around 13 units. In general, having a higher uplink speed is a plus since it improves the internet phone/video call experience and it does no harm to the customers. Hence, increasing uplink speed would appear to not affect the customers' decision to switch to different operators.   -->
   
 **Boxplot with the mean time to load a webpage against an indicator whether a customer switched to a different provider**
 ```{r, fig.height = 2.75}
@@ -50,12 +50,12 @@ churn_data %>% ggplot(aes(x = churn, y = webget, color = churn)) + geom_boxplot(
 ```
 We can presume that there is a strong dependency between the time to load a webpage (which directly corresponds to the downlink speed) and an indicator whether customers changed their operators. The average downlink speed was significantly lower for the customers that have switched to a different provider (around 550 units) than for those who haven't (around 350 units). We can conclude this as the average time to load a webpage, for those clients who switched, is nearly 200 units longer than of those who didn't. To clarify, the longer it takes to load a webpage the lower is the Internet downlink speed. Downlink is often more important as people spend more time loading media content and browsing web pages which solely depends on download speed. 
   
-**Boxplot with how long a customer waited on the phone call for a customer service operator against an indicator whether a customer switched to a different provider**
-```{r, fig.height = 2.75}
+<!-- **Boxplot with how long a customer waited on the phone call for a customer service operator against an indicator whether a customer switched to a different provider** -->
+```{r, fig.height = 2.75, echo=FALSE, include=FALSE}
 churn_data %>% ggplot(aes(x = churn, y = callwait, color = churn)) + geom_boxplot() +
  labs(y="Customer service waiting time",x= "Switched to new provider",color="Switched")
 ```
-Even though the average waiting time of nearly 8.5 units for a customer service operator is similar in both cases, overall the majority of customers who switched to a different operator had to wait slightly longer than the average and the customers who haven't changed their provider, around 8.7 units. We can conclude that the time spent by a customer on a call while they're waiting for a customer service operator to attend may impact their decision to switch to another operator although the influence seems to be less significant compared to time to load a webpage.  
+<!-- Even though the average waiting time of nearly 8.5 units for a customer service operator is similar in both cases, overall the majority of customers who switched to a different operator had to wait slightly longer than the average and the customers who haven't changed their provider, around 8.7 units. We can conclude that the time spent by a customer on a call while they're waiting for a customer service operator to attend may impact their decision to switch to another operator although the influence seems to be less significant compared to time to load a webpage.   -->
   
 **Boxplot with the number of times a customer contacted the company via a phone call against an indicator whether a customer switched to a different provider**
 ```{r, fig.height = 2.75}
@@ -66,9 +66,10 @@ On the boxplot above we can observe that on average the customers that have swit
 
 **Conclusion**
 
+
 Out of the 4 factors, provided in the dataset, that can influence the 'churn' variable, time to load the webpage (which subsequently leads to the downlink speed) is the most important one. Average call waiting time for customer service doesn't differ drastically but still is higher for customers who chose different provider. Thus, we could conclude that this aspect also plays its part in the customers' decision along with the number of times the customer calls to the company. The most suspicious variable is the upload speed. For those clients who changed their providers, the uplink speed was actually higher but the downlink speed was lower (comparing to the customers who didn't change their provider) while normally the opposite should be the case (unless we're talking about 5G).
 
-Unfortunately, we don't have access to any other data, hence we can only speculate that perhaps there are some other issues with the provider's network.
+Unfortunately, we don't have access to any other data, hence we can only speculate that perhaps there are some other issues with the provider's network. Please refere to .rmd file to see other 2 boxplots.
 
 
 ## **Part (b)**
