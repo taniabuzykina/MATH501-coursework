@@ -36,7 +36,7 @@ head(churn_data)
 ```
 
 **Boxplot with average speed of upload against an indicator whether a customer switched to a different provider**
-```{r}
+```{r, fig.height = 3}
 churn_data %>% ggplot(aes(x = churn, y = upload, color = churn)) + 
  geom_boxplot() +
  labs (y = "Speed of upload", 
@@ -46,7 +46,7 @@ churn_data %>% ggplot(aes(x = churn, y = upload, color = churn)) +
 From the boxplot above we can see that customers who have not switched to a different operator have lower average upload speeds of approximately 10.5 units in comparison with the customers who have switched and had average upload speed of around 13 units. In general, having a higher uplink speed is a plus since it improves the internet phone/video call experience and it does no harm to the customers. Hence, increasing uplink speed would appear to not affect the customers' decision to switch to different operators.  
   
 **Boxplot with the mean time to load a webpage against an indicator whether a customer switched to a different provider**
-```{r}
+```{r, fig.height = 3}
 churn_data %>% ggplot(aes(x = churn, y = webget, color = churn)) + 
  geom_boxplot() +
  labs (y = "Average time to load a webpage", 
@@ -56,7 +56,7 @@ churn_data %>% ggplot(aes(x = churn, y = webget, color = churn)) +
 We can presume that there is a strong dependency between the time to load a webpage (which directly corresponds to the downlink speed) and an indicator whether customers changed their operators. The average downlink speed was significantly lower for the customers that have switched to a different provider (around 550 units) than for those who haven't (around 350 units). We can conclude this as the average time to load a webpage, for those clients who switched, is nearly 200 units longer than of those who didn't. To clarify, the longer it takes to load a webpage the lower is the Internet downlink speed. Downlink is often more important as people spend more time loading media content and browsing web pages which solely depends on download speed. 
   
 **Boxplot with how long a customer waited on the phone call for a customer service operator against an indicator whether a customer switched to a different provider**
-```{r}
+```{r, fig.height = 3}
 churn_data %>% ggplot(aes(x = churn, y = callwait, color = churn)) + 
  geom_boxplot() +
  labs (y = "Customer service waiting time", 
@@ -66,10 +66,10 @@ churn_data %>% ggplot(aes(x = churn, y = callwait, color = churn)) +
 Even though the average waiting time of nearly 8.5 units for a customer service operator is similar in both cases, overall the majority of customers who switched to a different operator had to wait slightly longer than the average and the customers who haven't changed their provider, around 8.7 units. We can conclude that the time spent by a customer on a call while they're waiting for a customer service operator to attend may impact their decision to switch to another operator although the influence seems to be less significant compared to time to load a webpage.  
   
 **Boxplot with the number of times a customer contacted the company via a phone call against an indicator whether a customer switched to a different provider**
-```{r}
+```{r, fig.height = 3}
 churn_data %>% ggplot(aes(x = churn, y = enqcount, color = churn)) + 
  geom_boxplot() +
- labs (y = "The number of times a customer contacted the company", 
+ labs (y = "The number of enquiry calls", 
        x = "Switched to a new provider",
        color = "Switched")
 ```
@@ -180,7 +180,7 @@ for (j in 1:30) errors[j] <- leave.KNN(j, train.X, train.Y)
 ```
 
 Plotting our errors.
-```{r}
+```{r, fig.height = 3}
 # plotting errors
 plot(errors, xlab="K", ylab = "Test error")
 ```
@@ -251,7 +251,7 @@ We could use a different notation and specify the training set directly in rando
 ### Using the obtained random forest, comment on the importance of the four variables for predicting churn
 
 Plotting mean decrease accuracy and mean decrease gini measures to identify the most important variables.
-```{r}
+```{r, fig.height = 3}
 varImpPlot(random.tree, main = "Random Forest Variable Importance")
 ```
 
@@ -280,15 +280,12 @@ Random Forest method is more accurate than KNN with optimal K=1 with prediction 
 ### Using the entire data set (training set and test set combined), perform Principal Component Analysis for the four variables: upload, webget, enqcount and callwait. Comment on the results. 
 
 Separating the predictors from the dataframe to perform the Principal Component Analysis and building a graph to determine the correlation of predictors and the data spread.
-```{r}
+```{r, fig.height=5}
 churn_predictors <- churn_data[ , c("upload", "webget","enqcount", "callwait")]
 ggpairs(churn_predictors)
 ```
 
-*CAN BE DISCARDED IF CRITICAL:*
-*The 'upload' and 'webget' variables have the biggest correlation coefficient 0.661. Since the number is closer to 1 we can assume that although weak there might be dependency between those 2 variables. The 'upload' data has the majority of records with speed between 7.5 and 12.5 units, while most of 'webget' entries' values rise up to 600 units. 'callwait' and 'enqcount' have second biggest but still a very weak correlation of 0.278. Most of the entries in 'enqcount' variable have at least one call and spread up until 7 calls with the highest number of entries in 2 calls while 'callwait' shows that most of the customers had to wait from 5 to 12.5 units (mins presumably) or on the contrary, we can observe that some of the customers waited for less than 2.5 units of time.*
-
-Overall the correlation between predictors is rather weak, 'upload', 'enqcount' and 'callwait' variables have high variation. Correlation between 'upload' and 'webget' predictors is on a stronger side within the current dataset since 0.661 is rather closer to 1.
+Overall the correlation between predictors is rather weak, 'upload', 'enqcount' and 'callwait' variables have high variation while in case of 'webget' most of the entries' values rise up to 600 units. The 'upload' and 'webget' variables have the biggest correlation coefficient 0.661. Since the number is closer to 1 we can assume that although weak there might be dependency between those 2 variables.
 
 Performing the PCA.
 ```{r}
@@ -312,7 +309,7 @@ new_churn <- new_churn %>% mutate(churn = churn_data$churn)
 ```
 
 In order to create a two-dimensional view of the data we'll use first 2 principal components and 'churn' variable to colour the points. 
-```{r}
+```{r, fig.height=3}
 new_churn %>% ggplot(aes(x = Comp.1, y = Comp.2, color = churn)) +
   geom_point() +
   labs(x = "First Principal Component",
@@ -373,7 +370,7 @@ As we can see, the random forest model trained on the data formed from 2 new pri
 ### Visualise the resulting classification rule on the scatter plot of the two first principal components.
 
 Visalising the resulting predicted classifiers with two principal components on the scatter plot. 
-```{r}
+```{r, fig.height=3}
 pca.test.X %>% ggplot(aes(x = Comp.1, y = Comp.2, color = pca.rf.predict)) +
   geom_point() +
   coord_fixed(ratio = 1) + 
