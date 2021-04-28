@@ -447,7 +447,7 @@ grid.arrange(Plot_A, Plot_C, ncol = 2)
 
 ### What do you conclude? 
 
-Plot A allows us to see the actual dose that relates to each point easily in terms that we understand. Plot C is slightly confusing in this sense that we are unable at a glance to determine what doseage leads to what percentage. 
+Plot A allows us to see the actual dose that relates to each point easily in terms that we understand. Plot C is confusing as we are unable, at a glance, to determine what dose leads to what percentage of patients getting better. 
 
 However, Plot C does help to spread the points across the graph, which would be more useful if we had a lot of data points to show. With the current dataset, this isn't really being seen to help and so Plot A would be an easier graph to show to people as most would understand the axis descriptions and meanings. 
 
@@ -767,7 +767,7 @@ ggs_density(bayesian_binary_logistic.ggs, family = '^beta')
 
 #### Caterpillar Plots \
 
-Caterpillar plots provide an insight into the distribution of parameter values. The dots represent median values, and the thick and thin lines represent the $90%$ and $95%$ of the highest posterior density regions, respectively. We can see that in both plots, there is no posterior support at zero.
+Caterpillar plots provide an insight into the distribution of parameter values. The dots represent median values, and the thick and thin lines represent the $90%$ and $95%$ of the highest posterior density regions respectively. We can see that in both plots, there is no posterior support at zero.
 
 ```{r, echo = F, fig.height = 1.2}
 ggs_caterpillar(bayesian_binary_logistic.ggs, family = '^beta_0') +
