@@ -15,7 +15,9 @@ lapply(lib, library, character.only = T)
 rm(lib)
 ```
 
-The following report will discuss the results of the MATH501 questions that were asked in two sections of machine learning and statistical analysis.
+```{r , echo=FALSE, include=FALSE}
+# The following report will discuss the results of the MATH501 questions that were asked in two sections of machine learning and statistical analysis.
+```
 
 # Machine Learning
 
@@ -27,8 +29,7 @@ Reading our data into a dataframe:
 data_path <- "data/churndata.txt"
 churn_data <- read.csv(data_path, sep = " ")
 churn_data <- na.exclude(churn_data) # removing entries with NA values
-# converting classifier to a factor:
-churn_data$churn <- as.factor(churn_data$churn) 
+churn_data$churn <- as.factor(churn_data$churn) # converting classifier to a factor
 ```
 The data includes 4 predictors - 'webget', 'callwait', 'upload' and 'enqcount' and a classifier 'churn' which identifies whether a client has switched to a new operator or not.
 ```{r}
@@ -36,42 +37,30 @@ head(churn_data)
 ```
 
 **Boxplot with average speed of upload against an indicator whether a customer switched to a different provider**
-```{r, fig.height = 3}
-churn_data %>% ggplot(aes(x = churn, y = upload, color = churn)) + 
- geom_boxplot() +
- labs (y = "Speed of upload", 
-       x = "Switched to a new provider",
-       color = "Switched")
+```{r, fig.height = 2.75}
+churn_data %>% ggplot(aes(x = churn, y = upload, color = churn)) + geom_boxplot() +
+ labs (y = "Speed of upload",x = "Switched to a new provider",color = "Switched")
 ```
 From the boxplot above we can see that customers who have not switched to a different operator have lower average upload speeds of approximately 10.5 units in comparison with the customers who have switched and had average upload speed of around 13 units. In general, having a higher uplink speed is a plus since it improves the internet phone/video call experience and it does no harm to the customers. Hence, increasing uplink speed would appear to not affect the customers' decision to switch to different operators.  
   
 **Boxplot with the mean time to load a webpage against an indicator whether a customer switched to a different provider**
-```{r, fig.height = 3}
-churn_data %>% ggplot(aes(x = churn, y = webget, color = churn)) + 
- geom_boxplot() +
- labs (y = "Average time to load a webpage", 
-       x = "Switched to a new provider",
-       color = "Switched")
+```{r, fig.height = 2.75}
+churn_data %>% ggplot(aes(x = churn, y = webget, color = churn)) + geom_boxplot() +
+ labs(y="Average time to load webpage",x="Switched to new provider",color="Switched")
 ```
 We can presume that there is a strong dependency between the time to load a webpage (which directly corresponds to the downlink speed) and an indicator whether customers changed their operators. The average downlink speed was significantly lower for the customers that have switched to a different provider (around 550 units) than for those who haven't (around 350 units). We can conclude this as the average time to load a webpage, for those clients who switched, is nearly 200 units longer than of those who didn't. To clarify, the longer it takes to load a webpage the lower is the Internet downlink speed. Downlink is often more important as people spend more time loading media content and browsing web pages which solely depends on download speed. 
   
 **Boxplot with how long a customer waited on the phone call for a customer service operator against an indicator whether a customer switched to a different provider**
-```{r, fig.height = 3}
-churn_data %>% ggplot(aes(x = churn, y = callwait, color = churn)) + 
- geom_boxplot() +
- labs (y = "Customer service waiting time", 
-       x = "Switched to a new provider",
-       color = "Switched")
+```{r, fig.height = 2.75}
+churn_data %>% ggplot(aes(x = churn, y = callwait, color = churn)) + geom_boxplot() +
+ labs(y="Customer service waiting time",x= "Switched to new provider",color="Switched")
 ```
 Even though the average waiting time of nearly 8.5 units for a customer service operator is similar in both cases, overall the majority of customers who switched to a different operator had to wait slightly longer than the average and the customers who haven't changed their provider, around 8.7 units. We can conclude that the time spent by a customer on a call while they're waiting for a customer service operator to attend may impact their decision to switch to another operator although the influence seems to be less significant compared to time to load a webpage.  
   
 **Boxplot with the number of times a customer contacted the company via a phone call against an indicator whether a customer switched to a different provider**
-```{r, fig.height = 3}
-churn_data %>% ggplot(aes(x = churn, y = enqcount, color = churn)) + 
- geom_boxplot() +
- labs (y = "The number of enquiry calls", 
-       x = "Switched to a new provider",
-       color = "Switched")
+```{r, fig.height = 2.75}
+churn_data %>% ggplot(aes(x=churn, y=enqcount, color=churn))+ geom_boxplot()+
+ labs(y="The number of enquiry calls",x="Switched to new provider",color="Switched")
 ```
 On the boxplot above we can observe that on average the customers that have switched to a different operator contacted the company via a phone call at least 1 time more often than the ones who haven't with 4 and 3 calls for both types of customers respectively. The biggest number of contact attempts is 7 which is 2 calls more than of the customers who haven't changed their providers. It can be observed from the data that some of the customers who switched didn't contact the company even once. On the contrary, a minority of the customers who haven't changed their provider also have more than 5 calls to the customer service team. It is safe to conclude that the number of calls impacts the customers' decision to choose a different operator but its importance is smaller comparing to the time to load a webpage.  
 
@@ -84,7 +73,6 @@ Unfortunately, we don't have access to any other data, hence we can only specula
 
 ## **Part (b)**
 ### Create a training set consisting of 350 randomly chosen data points and a test set consisting of the remaining 150 data points
-
 ```{r}
 set.seed(1) # to make the results reproducible
 num_subset <- sample(nrow(churn_data), 350) # randomly choose 350 numbers out of 500
@@ -93,13 +81,10 @@ num_subset <- sample(nrow(churn_data), 350) # randomly choose 350 numbers out of
 Separating the data into predictors (X) and classifier (Y):
 ```{r}
 attach(churn_data)
-
 X <- cbind(upload, webget, enqcount, callwait) 
-
 Y <- churn
 Y <- as.integer(Y == 'yes')
 Y <- as.factor(Y)
-
 detach(churn_data)
 ```
 
@@ -107,7 +92,6 @@ Dividing the data into training and testing sets:
 ```{r}
 train.X <- X[num_subset, ] # 350 records - Training Set
 train.Y <- Y[num_subset]
-
 test.X <- X[-num_subset, ] # 150 records - Test Set
 test.Y <- Y[-num_subset]
 ```
@@ -152,23 +136,19 @@ leave.KNN <- function(K, train.X, train.Y){
           # them as temporary training sets (without an i-th row)
           temp.train.X <- train.X[-i,]
           temp.train.Y <- train.Y[-i]
-
           # using an i-th row as a temporary test set
           temp.test.X <- train.X[i,]
           temp.test.Y <- train.Y[i]
-
           # the resulting KNN is tested on only 1 entry
           temp.knn <- knn(
             train = temp.train.X, 
             test = temp.test.X, 
             cl = temp.train.Y, k = K)
-
           # the error is being calculated on whether a test entry was classified wrongly 
           # or not and accumulated as we'll need to find the mean error in the end
           error <- error + mean(temp.knn != temp.test.Y) 
             # 1 if the test entry was classified wrongly and 0 if correctly
         }
-
      return (error/n) #returning the average error
 }
 ```
@@ -181,7 +161,6 @@ for (j in 1:30) errors[j] <- leave.KNN(j, train.X, train.Y)
 
 Plotting our errors.
 ```{r, fig.height = 3}
-# plotting errors
 plot(errors, xlab="K", ylab = "Test error")
 ```
 
@@ -237,13 +216,13 @@ testing.Y <- unlist(testing.Y)
 ```
 
 ```{r, echo=FALSE}
-# getting rid of the redundant variables
-rm(X, Y, train.X, test.X, test.Y, train.Y)
+rm(X, Y, train.X, test.X, test.Y, train.Y) # getting rid of the redundant variables
 ```
 
 Constructing a random tree classifier based on 4 predictors. The 'mtry' variable normally can be equal to square root of the original number of predictors, hence mtry=2. 
 ```{r}
-random.tree <- randomForest(churn ~ ., data = churn_data, subset = num_subset, mtry = 2, importance = TRUE)
+random.tree <- 
+  randomForest(churn ~ ., data=churn_data, subset=num_subset, mtry=2, importance=TRUE)
 ```
 
 We could use a different notation and specify the training set directly in randomForest function but using our subset sequence instead will save  extra variables in global environment so we went for the option above.
@@ -251,7 +230,7 @@ We could use a different notation and specify the training set directly in rando
 ### Using the obtained random forest, comment on the importance of the four variables for predicting churn
 
 Plotting mean decrease accuracy and mean decrease gini measures to identify the most important variables.
-```{r, fig.height = 3}
+```{r, fig.height = 2.75}
 varImpPlot(random.tree, main = "Random Forest Variable Importance")
 ```
 
@@ -263,7 +242,6 @@ Calculating the test error for random forest classifier based on the confusion m
 ```{r}
 rf.predict <- predict(random.tree, testing.X, type = "class")
 tab <- table(rf.predict, testing.Y) # confusion matrix
-
 error.RandomForest <- (tab[1,2] + tab[2,1]) / sum(tab)
 ```
 
@@ -280,7 +258,7 @@ Random Forest method is more accurate than KNN with optimal K=1 with prediction 
 ### Using the entire data set (training set and test set combined), perform Principal Component Analysis for the four variables: upload, webget, enqcount and callwait. Comment on the results. 
 
 Separating the predictors from the dataframe to perform the Principal Component Analysis and building a graph to determine the correlation of predictors and the data spread.
-```{r, fig.height=5}
+```{r, fig.height=4}
 churn_predictors <- churn_data[ , c("upload", "webget","enqcount", "callwait")]
 ggpairs(churn_predictors)
 ```
@@ -290,7 +268,6 @@ Overall the correlation between predictors is rather weak, 'upload', 'enqcount' 
 Performing the PCA.
 ```{r}
 churn_pca <- princomp(churn_predictors, cor = TRUE)
-# the first column contains the names of cities so we exclude it.
 summary(churn_pca)
 ```
 New variable Comp.1 holds 41.5% of variance in the data and has the deviation of `r as.numeric(churn_pca$sdev[1])`, which is the biggest spread of the data. Comp. 2 accounts for 31.9% of the information variance giving a cumulative percentage of 73.5%. The 2 components contain different information and created by using data from variables with certain weights.
@@ -310,12 +287,9 @@ new_churn <- new_churn %>% mutate(churn = churn_data$churn)
 
 In order to create a two-dimensional view of the data we'll use first 2 principal components and 'churn' variable to colour the points. 
 ```{r, fig.height=3}
-new_churn %>% ggplot(aes(x = Comp.1, y = Comp.2, color = churn)) +
-  geom_point() +
-  labs(x = "First Principal Component",
-       y = "Second Principal Component",
-       color = "Switched to a new operator") +
-  coord_fixed(ratio = 1) 
+new_churn %>% ggplot(aes(x = Comp.1, y = Comp.2, color = churn)) +  geom_point() +
+  labs(x="First Principal Component", y="Second Principal Component",
+       color="Switched to a new operator") +  coord_fixed(ratio = 1) 
 ```
 
 ### How much of the variation or information in the data is preserved in this plot? Provide an interpretation of the first two principal components.
@@ -324,8 +298,7 @@ Together, the first two principal components explain 73.5% of the variability.
 
 Building a plot to demonstrate how the new components were created.
 ```{r}
-biplot(churn_pca, cex = c(0.5, 1),
-       xlab = "Contribution to First Principal Component",
+biplot(churn_pca, cex = c(0.5, 1),xlab = "Contribution to First Principal Component",
        ylab = "Contribution to Second Principal Component")
 ```
 
@@ -345,8 +318,8 @@ pca.test.Y <- unlist(pca.test.Y)
 
 Training our random forest model. The mtry=1 as square root of 2 (number of predictors in our dataset) is approximately 1.4 hence closer to 1. 
 ```{r}
-pca.random.tree <- randomForest(churn ~ ., data = new_churn, subset = num_subset, mtry = 1, 
-                            importance = TRUE)
+pca.random.tree <- 
+  randomForest(churn ~ ., data = new_churn, subset = num_subset, mtry = 1, importance = TRUE)
 ```
 
 ### Calculate the test error for the obtained random forest and comment on it. 
@@ -364,18 +337,15 @@ cat("KNN Error:", error.KNN)
 cat("RandomForest Error:", error.RandomForest) 
 cat("RandomForest PCA Error:", error.PCA.RandomForest)
 ```
-
 As we can see, the random forest model trained on the data formed from 2 new principal components predicts the 'churn' classifier with 10% bigger error. Our assumption is that this happens because the two components altogether hold only 3/4 of the data variation. Perhaps if we could train our model on all 4 components the results would have been better but then there was no sense in doing principal component analysis in the first place. Since principal component analysis is good for reducing dimensionality by identifying the most important predictors and those that could be got rid of we can logically expect that it will influence the resulting model test error, the question is whether this change was positive or negative. Based solely on the test error we can assume that discarding 2 other principal components wasn't a good idea. One more suggestion on why the PCA didn't work well here is mentioned in the conclusions. 
 
 ### Visualise the resulting classification rule on the scatter plot of the two first principal components.
 
 Visalising the resulting predicted classifiers with two principal components on the scatter plot. 
 ```{r, fig.height=3}
-pca.test.X %>% ggplot(aes(x = Comp.1, y = Comp.2, color = pca.rf.predict)) +
-  geom_point() +
-  coord_fixed(ratio = 1) + 
-  labs(x = "Principal Component 1", y = "Principal Component 2",
-       color = "Predicted 'churn' classifier")
+pca.test.X %>% ggplot(aes(x=Comp.1,y=Comp.2,color=pca.rf.predict))+ geom_point()+
+  labs(x="Principal Component 1",y="Principal Component 2",
+       color="Predicted 'churn' classifier") + coord_fixed(ratio = 1)
 ```
 
 We can observe that most of the customers who have decided to switch to a different operator have positive values of principal component 1 which focuses on Internet speed factors like 'upload' and 'webget'.
@@ -408,23 +378,21 @@ experiment_df
 
 Work out the proportion of patients who got better and add it to the dataframe for analysis
 ```{r}
-experiment_df <- experiment_df %>% mutate(Proportion_better = Number_better / Number_treated)
+experiment_df <- 
+  experiment_df %>% mutate(Proportion_better = Number_better / Number_treated)
 ```
 
 ### Use ggplot2 to visualize these data.
-
-Plot these proportions
 ```{r}
 Plot_A <- 
-  ggplot(experiment_df, aes(x = Dose, y = Proportion_better))+
-  geom_point()+
+  ggplot(experiment_df, aes(x = Dose, y = Proportion_better))+ geom_point()+
   geom_hline(yintercept=.25,linetype='dotted',col='blue')+
   geom_hline(yintercept=.75,linetype='dotted',col='blue')+
   labs(x="Dose (mg/mL)",y="% of patients getting better",subtitle="Plot A")+
   scale_y_continuous(breaks=c(0,0.25,0.5,0.75,1),minor_breaks=NULL,limits=c(0,1))
 ```
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, fig.height = 2.75 }
 Plot_A
 ```
 
@@ -439,25 +407,20 @@ With this graph we can also conclude that improving recovery from 80% to near 10
 ## Part (b)
 ### Fit the model in the frequentist framework and report $\hat{\beta}_{0}$ (intercept) and $\hat{\beta}_{1}$ (Dose(x))
 ```{r}
-m <- glm(cbind(Number_better, 
-               Number_treated - Number_better) ~ Dose, 
-               family = binomial, 
-               data = experiment_df) # Fitting the binary logistic regression model
+m <- glm(cbind(Number_better,Number_treated - Number_better) ~ Dose, 
+               family = binomial, data = experiment_df)
 ```
 
 ```{r}
-beta_0_hat <- coef(m)[1]
-beta_0_hat
+coef(m)[1] #beta_0_hat
 ```
 
 ```{r}
-beta_1_hat <- coef(m)[2]
-beta_1_hat
+coef(m)[2] #beta_1_hat
 ```
 
 ```{r, message=FALSE}
-ci <- confint(m) # Confidence intervals for beta_0 and beta_1
-ci
+confint(m) #Confidence intervals for beta_0 and beta_1
 ```
 
 ## Part (c)
@@ -469,17 +432,15 @@ experiment_df <- experiment_df %>% mutate(Log_Dose = log(Dose))
 ```
 
 ```{r}
-#Log(Dose) plot
-Plot_C <- 
-  ggplot(experiment_df, aes(x = Log_Dose, y = Proportion_better))+
-  geom_point()+
+Plot_C <- #Log(Dose) plot
+  ggplot(experiment_df, aes(x = Log_Dose, y = Proportion_better))+  geom_point()+
   geom_hline(yintercept=.25,linetype='dotted',col='blue')+
   geom_hline(yintercept=.75,linetype='dotted',col='blue')+
   labs(x="Log of Dose (mg/mL)",y="% of patients getting better",subtitle="Plot C")+
   scale_y_continuous(breaks=c(0,0.25,0.5,0.75,1),minor_breaks=NULL,limits=c(0,1))
 ```
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, fig.height=3}
 grid.arrange(Plot_A, Plot_C, ncol = 2)
 ```
 
@@ -494,20 +455,14 @@ Overall, we can start to see the curve of improvement as dose increase from the 
 ### Fit the logarithmic model in the frequentist framework, report beta_0_hat and beta_1_hat
 ```{r}
 m_log <- glm(cbind(Number_better, Number_treated - Number_better) ~ Log_Dose, 
-         family = binomial, 
-         data = experiment_df)
-
-beta_0_hat <- coef(m_log)[1]
-beta_0_hat
-
-beta_1_hat <- coef(m_log)[2]
-beta_1_hat
+         family = binomial, data = experiment_df)
+coef(m_log)[1] #beta_0_hat
+coef(m_log)[2] #beta_1_hat
 ```
 
 ### Calculate the 95% confidence intervals for $\beta_{0}$ and $\beta_{1}$.
 ```{r, message=FALSE}
-ci <- confint(m_log)
-ci
+confint(m_log) #Confidence intervals for beta_0 and beta_1
 ```
 
 ### Which of the two frequentist models considered in parts (b) and (c) (the standard or the logarithmic model) do you prefer? Why?
@@ -522,8 +477,7 @@ Due to the size of the data set it is difficult to see any difference in the gra
 Dose_new <- c(log(600),log(800),log(1500))
 
 # Estimated value of eta and associated standard error at Dose_new
-eta_hat <- predict(m_log, 
-               newdata = data.frame(Log_Dose = Dose_new),
+eta_hat <- predict(m_log, newdata = data.frame(Log_Dose = Dose_new),
                se.fit = TRUE) # Extract the standard errors
 
 # Approximate 95% confidence interval for eta
@@ -545,8 +499,7 @@ As the dose increases, the probability of the patient getting better increases.
 
 ```{r}
 ## Direct Method
-p_hat_direct <- predict(m_log, 
-               newdata = data.frame(Log_Dose = Dose_new),
+p_hat_direct <- predict(m_log, newdata = data.frame(Log_Dose = Dose_new),
                type = "response", # Prediction of p, not eta
                se.fit = TRUE) # Extract the standard errors
 
@@ -569,8 +522,7 @@ It is generally recommended to use the indirect method as it provides more accur
 Dose_seq_log <- seq(from = min(log(Dose)), to = max(log(Dose)), length = 20)
 
 # Obtain the estimated values of eta and standard errors at a sequence of Dose values
-eta_seq_log <- predict(m_log, 
-                        newdata = data.frame(Log_Dose = Dose_seq_log),
+eta_seq_log <- predict(m_log, newdata = data.frame(Log_Dose = Dose_seq_log),
                         se.fit = TRUE) # Extract the standard errors
 
 # Transform estimated values of eta to probabilities 
@@ -591,8 +543,7 @@ predictions_df_log <- data.frame(Dose_seq_log,
 
 # Add to the ggplot 
 Plot_E <- 
-  ggplot(experiment_df, aes(x = Log_Dose, y = Proportion_better)) +
-  geom_point() +
+  ggplot(experiment_df, aes(x = Log_Dose, y = Proportion_better)) + geom_point() +
   geom_hline(yintercept=.25,linetype='dotted',col='blue')+
   geom_hline(yintercept=.75,linetype='dotted',col='blue')+
   # Add the estimated values of p (predictions)
@@ -619,8 +570,7 @@ predictions_df <- data.frame(Dose_seq,
                              p_upper = p_seq_ci[,2]) # Upper confidence limits
 
 Plot_A_Alt <- 
-  ggplot(experiment_df, aes(x = Dose, y = Proportion_better)) +
-  geom_point() +
+  ggplot(experiment_df, aes(x = Dose, y = Proportion_better)) + geom_point() +
   geom_hline(yintercept=.25,linetype='dotted',col='blue')+
   geom_hline(yintercept=.75,linetype='dotted',col='blue')+
   geom_line(aes(x = Dose_seq,y = p_seq),data = predictions_df,colour = "red")+
@@ -630,26 +580,24 @@ Plot_A_Alt <-
   scale_y_continuous(breaks=c(0,0.25,0.5,0.75,1),minor_breaks=NULL,limits=c(0,1))
 ```
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, fig.height=3}
 grid.arrange(Plot_A_Alt, Plot_E, ncol = 2)
 ```
 
 ### In addition, perform a suitable statistical test to check whether the logarithmic model is adequate. State your hypotheses and conclusions carefully.
 
-The hypotheses are:
+Null hypothesis - $H_{0}$: Model C provides an adequate fit to the data
 
-* Null hypothesis - $H_{0}$: Model C provides an adequate fit to the data
-* Alternative hypothesis - $H_{1}$: Model C does not provide an adequate fit to the data.
+Alternative hypothesis - $H_{1}$: Model C does not provide an adequate fit to the data.
 
 or
 
-* Null hypothesis - $H_{0}$: The model as it stands is useful.
-* Alternative hypothesis - $H_{1}$: The model as it stands is NOT useful.
+Null hypothesis - $H_{0}$: The model as it stands is useful.
+
+Alternative hypothesis - $H_{1}$: The model as it stands is NOT useful.
 
 ```{r}
-p_value <- pchisq(deviance(m_log),# Specify the model under consideration
-            df.residual(m_log),
-            lower = FALSE)
+p_value <- pchisq(deviance(m_log),df.residual(m_log),lower = FALSE)
 p_value
 ```
 
@@ -675,27 +623,25 @@ beta_2_hat <- coef(m_log_log2)[3]
 
 ### Perform a frequentist hypothesis test of size 0.05 of whether $\beta_{2}$ is statistically significant and report your conclusion with justification. State your hypotheses and conclusions carefully.
 
-The hypotheses are:
+Null hypothesis - $H_{0}$: Model F provides an adequate fit to the data
 
-* Null hypothesis - $H_{0}$: Model F provides an adequate fit to the data
-* Alternative hypothesis - $H_{1}$: Model F does not provide an adequate fit to the data.
+Alternative hypothesis - $H_{1}$: Model F does not provide an adequate fit to the data.
 
 or
 
-* Null hypothesis - $H_{0}$: The model as it stands is useful.
-* Alternative hypothesis - $H_{1}$: The model as it stands is NOT useful.
+Null hypothesis - $H_{0}$: The model as it stands is useful.
+
+Alternative hypothesis - $H_{1}$: The model as it stands is NOT useful.
 
 ```{r}
-p_value <- pchisq(deviance(m_log_log2),# Specify the model under consideration
-            df.residual(m_log_log2),
-            lower = FALSE)
+p_value <- pchisq(deviance(m_log_log2),df.residual(m_log_log2),lower = FALSE)
 p_value
 ```
 
 P-value is less than 0.05 and thus the null hypothesis is rejected signifiying that this model is not an adequete fit to the data or in other words is not useful.
 
 ### In addition, report the 95% confidence interval for beta_2. Does this result confirm the conclusion of the hypothesis test?
-```{r}
+```{r, message = F}
 tail(confint(m_log_log2),1)
 ```
 
@@ -717,22 +663,22 @@ Deviance_c_log - Deviance_f_log_log2
 
 The difference between Model C Deviance and Model F Deviance is positive and so we can conclude that it is adequete. 
 
-Compare the models
+### Compare the models
 
-* Null hypothesis - $H_{0}$: Model C is adequate compared to Model F
-* Alternative hypothesis - $H_{1}$: Model C is not adequate compared to Model F
+Null hypothesis - $H_{0}$: Model C is adequate compared to Model F
+
+Alternative hypothesis - $H_{1}$: Model C is not adequate compared to Model F
 
 ```{r}
 AnovaTest <- anova(m_log, m_log_log2, test = "Chisq")
 AnovaTest[2,5]
 ```
-
 Here, there p-value is `r round(AnovaTest[2,5], digits=2)`. As this is greater than 0.05, we do not reject the null hypothesis and so Model C is adequate compared to Model F. In other words $\beta_{2} = 0$. Thus, Model C is preferred over Model F.
 
 
 ## Part (h)
 
-### Write jags/BUGS code to perform inference about the following related bayesian binary logistic regression model. Run your code. Include a graphical representation of the traceplots and posterior densities of beta_0 and beta_1 in your report and discuss your results.
+### Write jags/BUGS code to perform inference about the following related bayesian binary logistic regression model. Run your code. Include a graphical representation of the traceplots and posterior densities of $\beta_0$ and $\beta_1$ in your report and discuss your results.
 
 ```{r, echo = F}
 p_group <- 1:4 # patient group
@@ -744,10 +690,8 @@ covid_data <- data.frame(p_group, dose, n_patients, n_improved)
 rm(p_group, dose, n_patients, n_improved)
 
 # Calculate the proportion of patients who showed signs of improvement, and the log of dose
-covid_data <- covid_data %>% mutate(
-  percent_improved = n_improved / n_patients,
-  log_dose = log(dose)
-)
+covid_data <- 
+  covid_data %>% mutate(percent_improved = n_improved / n_patients,log_dose = log(dose))
 
 n_obs <- length(covid_data$dose)
 n <- covid_data$n_patients
@@ -764,28 +708,22 @@ task_h_data <- list('n_obs', 'n', 'y', 'x', 'x_new')
 bayesian_binary_logistic_model <- function() {
   for (i in 1:n_obs) {
     y[i] ~ dbin(p[i], n[i]) # binomial distribution
-    
     logit(p[i]) <- eta[i] # link function
-    
     eta[i] <- beta_0 + beta_1 * log(x[i])
   }
   # Specify prior distributions on the unknown parameters
   beta_0 ~ dnorm(0.0, 1.0E-4)
   beta_1 ~ dnorm(0.0, 1.0E-4)
-  
   # Evaluate the linear predictor at the new value of dose (x_new)
   eta_new <- beta_0 + beta_1 * log(x_new)
-  
   # Convert to the probability scale
   p_new <- exp(eta_new) / (1 + exp(eta_new))
 }
 
 # Performing bayesian inference
-bayesian_binary_logistic <- jags(data = task_h_data,
-                                 parameters.to.save = c('beta_0', 'beta_1', 'p', 'p_new'),
-                                 n.iter = 100000,
-                                 n.chains = 3,
-                                 model.file = bayesian_binary_logistic_model)
+bayesian_binary_logistic <- 
+  jags(data = task_h_data,parameters.to.save = c('beta_0', 'beta_1', 'p', 'p_new'),
+        n.iter = 100000,n.chains = 3,model.file = bayesian_binary_logistic_model)
 ```
 
 ```{r}
@@ -853,14 +791,13 @@ ggs_caterpillar(bayesian_binary_logistic.ggs, family = '^p') +
 
 ## Part (i)
 
-### Compare the 95% confidence intervals of beta_0 and beta_1 obtained in part (c) using the frequentist logarithmic model, with the corresponding 95% credible intervals obtained in part (h) using the bayesian logarithmic model.
+### Compare the 95% confidence intervals of $\beta_0$ and $\beta_1$ obtained in part (c) using the frequentist logarithmic model, with the corresponding 95% credible intervals obtained in part (h) using the bayesian logarithmic model.
 
 ```{r}
 # Creating the frequentist model
-m_log <- glm(cbind(n_improved,
-                   n_patients - n_improved) ~ covid_data$log_dose,
-             family = binomial,
-             data = covid_data)
+m_log <- 
+  glm(cbind(n_improved, n_patients - n_improved) ~ covid_data$log_dose,
+      family = binomial,data = covid_data)
 ```
 
 ```{r, message = F}
@@ -919,11 +856,9 @@ b_binary_logistic_model_pred <- function() {
 }
 
 # Performing predictions
-bayesian_binary_logistic_prediction <- jags(data = task_j_data,
-                                            parameters.to.save = c('p_new'),
-                                            n.iter = 10000,
-                                            n.chains = 3,
-                                            model.file = b_binary_logistic_model_pred)
+bayesian_binary_logistic_prediction <- 
+  jags(data = task_j_data,parameters.to.save = c('p_new'),n.iter = 10000,
+      n.chains = 3,model.file = b_binary_logistic_model_pred)
 ```
 
 ```{r}
@@ -947,7 +882,7 @@ The numerical and graphical results of the prediction model _(above)_ follow the
 
 ### Consider the following quadratic bayesian model for the COVID-19 data and perform inference about its parameters, writing appropriate jags/BUGS code.
 
-### Use numerical and graphical representations of the posterior probabilities to discuss whether beta_2 is an appropriate term in the model.
+### Use numerical and graphical representations of the posterior probabilities to discuss whether $\beta_2$ is an appropriate term in the model.
 
 ```{r, echo = F}
 n_obs <- length(experiment_df$Dose)
@@ -964,31 +899,26 @@ task_k_data <- list('n_obs', 'n', 'y', 'x', 'x_new')
 b_binary_logistic_quadratic_model <- function() {
   for (i in 1:n_obs) {
     y[i] ~ dbin(p[i], n[i]) # binomial distribution
-    
     logit(p[i]) <- eta[i] # link function
-    
     eta[i] <- beta_0 + beta_1 * log(x[i]) + beta_2 * log(x[i])^2
   }
-  
   # Specify prior distributions on unknown parameters
   beta_0 ~ dnorm(0.0, 1.0E-4)
   beta_1 ~ dnorm(0.0, 1.0E-4)
   beta_2 ~ dnorm(0.0, 1.0E-4)
-  
   # Evaluate the linear predictor at the new value of dose (x_new)
   eta_new <- beta_0 + beta_1 * log(x_new) + beta_2 * log(x_new)^2
-  
   # Convert to the probability scale
   p_new <- exp(eta_new) / (1 + exp(eta_new))
 }
 
 # Performing bayesian inference
-bayesian_binary_logistic_quadratic <- jags(data = task_k_data,
-                                           parameters.to.save = c('beta_0', 'beta_1',
-                                                                  'beta_2', 'p', 'p_new'),
-                                           n.iter = 100000,
-                                           n.chains = 3,
-                                           model.file = b_binary_logistic_quadratic_model)
+bayesian_binary_logistic_quadratic <- 
+    jags(data = task_k_data,
+        parameters.to.save = c('beta_0', 'beta_1', 'beta_2', 'p', 'p_new'),
+        n.iter = 100000,
+        n.chains = 3,
+        model.file = b_binary_logistic_quadratic_model)
 ```
 
 ```{r, echo = F}
