@@ -467,7 +467,7 @@ confint(m_log) #Confidence intervals for beta_0 and beta_1
 ```
 
 ### Which of the two frequentist models considered in parts (b) and (c) (the standard or the logarithmic model) do you prefer? Why?
-Due to the size of the data set it is difficult to see any difference in the graph as using a log in this case would help with data being compacted and needing to be scaled out in magnatude. As such there is no real benefit to this model. This model does however produce a more confusng graph as the x-axis is in units of Log of Dose which is mre confusing that just the standard in graph a of dose as mg/ml. Graph a will be easier to read by many medical professionals as well as general people due to the accessability of this label. In a time of over whelming data accessability is key to helping people understand data and provide information.
+Due to the size of the data set it is difficult to see any difference in the graph as using a log in this case would help with data being compacted and needing to be scaled out in magnitude. As such there is no real benefit to this model. This model does however produce a more confusing graph as the x-axis is in units of Log of Dose which is more confusing that just the standard in graph a of dose as mg/ml. Graph a will be easier to read by many medical professionals as well as general people due to the accessibility of this label. In a time of over whelming data accessibility is key to helping people understand data and provide information.
 
 ## Part (d)
 
