@@ -27,13 +27,13 @@ experiment_df
 #
 # Work out proportions with reduced blood pressure 
 #
-experiment_df <- experiment_df %>% mutate(Proportion_reduced = Number_better / Number_treated)
+experiment_df <- experiment_df %>% mutate(Proportion_better = Number_better / Number_treated)
 experiment_df
 
 # 
 # Plot these proportions
 #
-ggplot(experiment_df, aes(x = Dose, y = Proportion_reduced)) +
+ggplot(experiment_df, aes(x = Dose, y = Proportion_better)) +
  geom_point() +
  geom_hline(yintercept=.25,linetype='dotted',col='blue')+
  geom_hline(yintercept=.75,linetype='dotted',col='blue')+
@@ -92,7 +92,7 @@ p_seq <- exp(eta_seq) / (1 + exp(eta_seq))
 predictions_df <- data.frame(Dose_seq, eta_seq, p_seq)
 
 # Add to the ggplot
-ggplot(experiment_df, aes(x = Dose, y = Proportion_reduced)) +
+ggplot(experiment_df, aes(x = Dose, y = Proportion_better)) +
  geom_point() +
  # Add the estimated values of p (predictions)
  geom_line(aes(x = Dose_seq, 
@@ -120,7 +120,7 @@ experiment_df <- experiment_df %>% mutate(Log_Dose = log(Dose))
 experiment_df
 
 # Plot these proportions
-ggplot(experiment_df, aes(x = Log_Dose, y = Proportion_reduced)) +
+ggplot(experiment_df, aes(x = Log_Dose, y = Proportion_better)) +
  geom_point() +
  geom_vline(xintercept=log(500),linetype='dotted',col='blue')+
  geom_vline(xintercept=log(1000),linetype='dotted',col='blue')+
@@ -245,7 +245,7 @@ predictions_df_log <- data.frame(Dose_seq_log,
                              p_upper_log = p_seq_log_ci[,2])
 
 # Add to the ggplot 
-ggplot(experiment_df, aes(x = Log_Dose, y = Proportion_reduced)) +
+ggplot(experiment_df, aes(x = Log_Dose, y = Proportion_better)) +
   geom_point() +
    # Add the estimated values of p (predictions)
   geom_line(aes(x = Dose_seq_log, 
