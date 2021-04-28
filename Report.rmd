@@ -893,8 +893,9 @@ y <- covid_data$n_improved
 x <- covid_data$dose
 
 x_new <- c(550, 780, 1900)
+n_new_dose <- length(x_new)
 
-task_j_data <- list('n_obs', 'n', 'y', 'x', 'x_new')
+task_j_data <- list('n_obs', 'n', 'y', 'x', 'x_new', 'n_new_dose')
 ```
 
 ```{r, message = F, results = 'hide'}
@@ -912,8 +913,8 @@ b_binary_logistic_model_pred <- function() {
   beta_1 ~ dnorm(0.0, 1.0E-4)
   
   # Prediction
-  for (j in 1:length(x_new)) {
-    eta_new[j] <- beta_0 + beta_1 * log(j[i])
+  for (j in 1:n_new_dose) {
+    eta_new[j] <- beta_0 + beta_1 * log(x_new[j])
     
     # Probabilities
     p_new[j] <- exp(eta_new[j]) / (1 + exp(eta_new[j]))
@@ -937,6 +938,12 @@ print(bayesian_binary_logistic_prediction, intervals = c(0.025, 0.5, 0.975))
 bayesian_binary_logistic_prediction.mcmc <- as.mcmc(bayesian_binary_logistic_prediction)
 bayesian_binary_logistic_prediction.ggs <- ggs(bayesian_binary_logistic_prediction.mcmc)
 ```
+
+```{r, echo = F, fig.height = 3}
+ggs_density(bayesian_binary_logistic_prediction.ggs, family = '^p')
+```
+
+The numerical and graphical results of the prediction model _(above)_ follow the expected trend of: an increase in dose results in a higher likelihood of a patient showing signs of improvement. Note that the chain values in the density plot for p_new[1] have a slight variance. This may be an indication that the values have have not properly converged, however they still largely overlap one another - the variation is minimal.
 
 
 ## Task (k)
