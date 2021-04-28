@@ -760,19 +760,9 @@ x <- covid_data$dose
 x_new <- 1500
 
 task_h_data <- list('n_obs', 'n', 'y', 'x', 'x_new')
-
-
-# n_obs <- length(experiment_df$Dose)
-# n <- experiment_df$Patient_group
-# y <- experiment_df$Number_better
-# x <- experiment_df$Dose
-# 
-# x_new <- 1500
-# 
-# task_h_data <- list('n_obs', 'n', 'y', 'x', 'x_new')
 ```
 
-```{r}
+```{r, message = F, results = 'hide'}
 # Creating the model
 bayesian_binary_logistic_model <- function() {
   for (i in 1:n_obs) {
@@ -792,64 +782,76 @@ bayesian_binary_logistic_model <- function() {
   # Convert to the probability scale
   p_new <- exp(eta_new) / (1 + exp(eta_new))
 }
-```
 
-```{r}
 # Performing bayesian inference
 bayesian_binary_logistic <- jags(data = task_h_data,
                                  parameters.to.save = c('beta_0', 'beta_1', 'p', 'p_new'),
                                  n.iter = 100000,
                                  n.chains = 3,
                                  model.file = bayesian_binary_logistic_model)
+```
 
+```{r}
 # Print numerical results of the model
 print(bayesian_binary_logistic, intervals = c(0.025, 0.5, 0.975))
 ```
 
 We can see that zero does not appear within the credible intervals for $\beta_0$ and $\beta_1$, which indicates no posterior support at zero. This means that both parameters are useful in our model.
 
+#### Traceplots \
+
+Traceplots show the history of parameters' values across iterations of the chain. The plot above shows that the average for all values appear to have converged as they follow a horizontal pattern - this suggests that they do not depend on their initial values. Those that seem more volatile are following a normal distribution.
+
 ```{r, echo = F}
 bayesian_binary_logistic.mcmc <- as.mcmc(bayesian_binary_logistic)
 bayesian_binary_logistic.ggs <- ggs(bayesian_binary_logistic.mcmc)
 ```
 
-```{r, echo = F}
+```{r, echo = F, fig.height = 7}
 ggs_traceplot(bayesian_binary_logistic.ggs)
 ```
 
-Traceplots show the history of parameters' values across iterations of the chain. The plot above shows that the average for all values appear to have converged as they follow a horizontal pattern - this suggests that they do not depend on their initial values. Those that seem more volatile, such as p[1] and p[2], are following a normal distribution.
+#### Autocorrelation \
+
+Autocorrelation is a value between $-1$ and $1$, which measures how linearly dependent the current value of the chain is to past values, _known as lags_.
+
+At the zeroth lag, a value in the chain has perfect autocorrelation with itself. As we progress along the chain, the values become less correlated. This is further indication that the values have converged.
 
 ```{r, echo = F}
 ggs_autocorrelation(bayesian_binary_logistic.ggs)
 ```
 
-Autocorrelation is a value between $-1$ and $1$, which measures how linearly dependent the current value of the chain is to past values, __known as lags__.
-
-At the zeroth lag, a value in the chain has perfect autocorrelation with itself. As we progress along the chain, the values become less correlated. This is further indication that the values have converged.
-
-```{r, echo = F}
-ggs_density(bayesian_binary_logistic.ggs, family = '^beta')
-```
+#### Density Plots \
 
 We can see that for both $\beta_0$ and $\beta_1$, all three chain values have converged with one another as the distributions mostly overlap one another.
 
-```{r, echo = F}
+```{r, echo = F, fig.height = 2.5}
+ggs_density(bayesian_binary_logistic.ggs, family = '^beta')
+```
+
+#### Caterpillar Plots \
+
+Caterpillar plots provide an insight into the distribution of parameter values. The dots represent median values, and the thick and thin lines represent the $90%$ and $95%$ of the highest posterior density regions, respectively. We can see that in both plots, there is no posterior support at zero.
+
+```{r, echo = F, fig.height = 1.2}
 ggs_caterpillar(bayesian_binary_logistic.ggs, family = '^beta_0') +
   geom_vline(xintercept = 0)
 ggs_caterpillar(bayesian_binary_logistic.ggs, family = '^beta_1') +
   geom_vline(xintercept = 0)
 ```
 
-Caterpillar plots provide an insight into the distribution of parameter values. The dots represent median values, and the thick and thin lines represent the $90%$ and $95%$ of the highest posterior density regions, respectively. We can see that in both plots, there is no posterior support at zero.
+#### Plotting p Values \
+
+As we saw in the plots for $\beta_0$ and $\beta_1$, all values shown here have converged and show no indication of any posterior support at zero. Furthermore, we can see that there is a positive correlation between the dosage and the likelihood of a patient showing signs of improvement.
 
 ```{r, echo = F}
 ggs_density(bayesian_binary_logistic.ggs, family = '^p') +
   geom_vline(xintercept = 0)
+```
+```{r, echo = F, fig.height = 1.5}
 ggs_caterpillar(bayesian_binary_logistic.ggs, family = '^p') +
   geom_vline(xintercept = 0)
 ```
-
-As we saw in the plots for $\beta_0$ and $\beta_1$, all values shown here have converged and show no indication of any posterior support at zero. Furthermore, we can see that there is a positive correlation between the dosage and the likelihood of a patient showing signs of improvement.
 
 
 ## Part (i)
@@ -864,13 +866,13 @@ m_log <- glm(cbind(n_improved,
              data = covid_data)
 ```
 
-```{r}
-# Print the 95% confidence intervals for beta_0 and beta_1
+```{r, message = F}
+# Print the 95% confidence intervals for beta_0 and beta_1, for the frequentist model
 confint(m_log)
 ```
 
 ```{r}
-# Print the 95% credible intervals
+# Print the 95% credible intervals, for the bayesian logarithmic model
 bayesian_binary_logistic$BUGSoutput$summary[1:2, c('mean', '50%', '2.5%', '97.5%')]
 ```
 
@@ -884,19 +886,20 @@ Looking at the intervals for both models, we can see that they share similar res
 ### Include a graphical representation, together with the numerical values of the 95% credible intervals, and comment on your results.
 
 ```{r, echo = F}
-n_obs <- length(experiment_df$Dose)
-n <- experiment_df$Number_treated
-y <- experiment_df$Number_better
-x <- experiment_df$Dose
+# Preparing data
+n_obs <- length(covid_data$dose)
+n <- covid_data$n_patients
+y <- covid_data$n_improved
+x <- covid_data$dose
 
 x_new <- c(550, 780, 1900)
 
 task_j_data <- list('n_obs', 'n', 'y', 'x', 'x_new')
 ```
 
-```{r}
+```{r, message = F, results = 'hide'}
 # Creating the model for prediction
-bayesian_binary_logistic_model_prediction <- function() {
+b_binary_logistic_model_pred <- function() {
   for (i in 1:n_obs) {
     y[i] ~ dbin(p[i], n[i]) # binomial distribution
     
@@ -916,14 +919,13 @@ bayesian_binary_logistic_model_prediction <- function() {
     p_new[j] <- exp(eta_new[j]) / (1 + exp(eta_new[j]))
   }
 }
-```
 
-```{r}
+# Performing predictions
 bayesian_binary_logistic_prediction <- jags(data = task_j_data,
                                             parameters.to.save = c('p_new'),
                                             n.iter = 10000,
                                             n.chains = 3,
-                                            model.file = bayesian_binary_logistic_model_prediction)
+                                            model.file = b_binary_logistic_model_pred)
 ```
 
 ```{r}
@@ -953,9 +955,9 @@ x_new <- 1500
 task_k_data <- list('n_obs', 'n', 'y', 'x', 'x_new')
 ```
 
-```{r}
+```{r, message = F, results = 'hide'}
 # Creating the quadratic model
-bayesian_binary_logistic_quadratic_model <- function() {
+b_binary_logistic_quadratic_model <- function() {
   for (i in 1:n_obs) {
     y[i] ~ dbin(p[i], n[i]) # binomial distribution
     
@@ -975,16 +977,14 @@ bayesian_binary_logistic_quadratic_model <- function() {
   # Convert to the probability scale
   p_new <- exp(eta_new) / (1 + exp(eta_new))
 }
-```
 
-```{r}
 # Performing bayesian inference
 bayesian_binary_logistic_quadratic <- jags(data = task_k_data,
-                                           parameters.to.save = c('beta_0', 'beta_1', 'beta_2',
-                                                                  'p', 'p_new'),
+                                           parameters.to.save = c('beta_0', 'beta_1',
+                                                                  'beta_2', 'p', 'p_new'),
                                            n.iter = 100000,
                                            n.chains = 3,
-                                           model.file = bayesian_binary_logistic_quadratic_model)
+                                           model.file = b_binary_logistic_quadratic_model)
 ```
 
 ```{r, echo = F}
@@ -992,22 +992,24 @@ bayesian_binary_logistic_quadratic <- jags(data = task_k_data,
 print(bayesian_binary_logistic_quadratic, intervals = c(0.025, 0.5, 0.975))
 ```
 
-Looking at the credible intervals for $\beta_2$, we can see that zero IS found within. This is an indication that $\beta_2$ is not an appropriate term for our model.
+Looking at the credible intervals for $\beta_2$, we can see that zero IS found within. This is an indication that $\beta_2$ may not be an appropriate term for our model.
+
+Comparing the results to those from the simple logarithmic model _(below)_, we can see that while the credible intervals for $\beta_0$ and $\beta_1$ include zero in the quadratic model, they do not in the simple model.
 
 ```{r, echo = F}
 # Print numerical results of the non-quadratic model, created in task H
 print(bayesian_binary_logistic, intervals = c(0.025, 0.5, 0.975))
 ```
 
-The results above are from the simple logarithmic model from part (h). We can see that while the credible intervals for $\beta_0$ and $\beta_1$ include zero in the quadratic model, they do not here.
+#### Deviance Information Criterion \
+
+Based on the results below, we can see that the simple model produces a lower DIC value than the quadratic model, which is more favorable. Note that as the values are so similar to one another, it is possible for an execution of this code to result in the quadratic model showing a lower DIC value. Multiple executions have shown that the simple logarithmic model generally produces the lower value.
 
 ```{r, echo = F}
 # Comparing the DIC (deviance information criterion) values of each model
-bayesian_binary_logistic$BUGSoutput$DIC
-bayesian_binary_logistic_quadratic$BUGSoutput$DIC
+sprintf("Logarithmic Model DIC: %s", bayesian_binary_logistic$BUGSoutput$DIC)
+sprintf("Quadratic Model DIC: %s", bayesian_binary_logistic_quadratic$BUGSoutput$DIC)
 ```
-
-Based on the numerical results above, we can see that the simple model produces a lower DIC value than the quadratic model, which is more favorable. Note that as the values are so similar to one another, it is possible for an execution of this code to result in the quadratic model showing a lower DIC value. Multiple executions have shown that the simple logarithmic model generally produces the lower value.
 
 ```{r, echo = F}
 # Convert jags output to an MCMC object, then to a ggs object
@@ -1015,22 +1017,23 @@ bayesian_binary_logistic_quadratic.mcmc <- as.mcmc(bayesian_binary_logistic_quad
 bayesian_binary_logistic_quadratic.ggs <- ggs(bayesian_binary_logistic_quadratic.mcmc)
 ```
 
+#### Density Plots \
+
+The density plots illustrate the inclusion of zero within the credible intervals for all three unknown parameters in the quadratic model. Here we can more clearly see the posterior support for all unknown parameters, with significant posterior support for $\beta_2$.
+
 ```{r, echo = F}
 # Density plots
 ggs_density(bayesian_binary_logistic_quadratic.ggs, family = '^beta') +
   geom_vline(xintercept = 0)
 ```
 
-The density plots illustrate the inclusion of zero within the credible intervals for all three unknown parameters in the quadratic model. Here we can more clearly see the posterior support for all unknown parameters, with significant posterior support for $\beta_2$.
-
-
 ## Task (l)
 
 ### Which of the two bayesian models considered in part (h), the logarithmic model, and (k), the quadratic model, do you prefer? Why?
 
-Based on the results of part (h) and (k), the simple (logarithmic) model appears to be the best suited for the task of predicting the effectiveness of different dosages of medicine, given the provided data.
+Based on the results of part (h) and (k), the simple _(logarithmic)_ model appears to be the best suited for the task of predicting the effectiveness of different dosages of medicine, given the provided data.
 
-The simple model resulted in no signs of posterior support for all unknown values while the quadratic model, with the inclusion of $\beta_2$, resulted in posterior support for all unknown values (not just $\beta_2$).
+The simple model resulted in no signs of posterior support for all unknown values while the quadratic model, with the inclusion of $\beta_2$, resulted in posterior support for all unknown values _(not just $\beta_2$)_.
 
 Furthermore, the simple model produces a lower DIC value than the quadratic model, however the difference between the two is small. Despite this, alongside all other information gathered about the two models, the simple model is still the more favourable option of the two.
 
