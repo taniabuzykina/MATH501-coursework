@@ -737,18 +737,42 @@ Here, there p-value is `r round(AnovaTest[2,5], digits=2)`. As this is greater t
 
 ### Write jags/BUGS code to perform inference about the following related bayesian binary logistic regression model. Run your code. Include a graphical representation of the traceplots and posterior densities of beta_0 and beta_1 in your report and discuss your results.
 
-```{r [H] Preparing data, echo = F}
-n_obs <- length(experiment_df$Dose)
-n <- experiment_df$Patient_group
-y <- experiment_df$Number_better
-x <- experiment_df$Dose
+```{r, echo = F}
+p_group <- 1:4 # patient group
+dose <- c(422, 744, 948, 2069) # medicine dosage
+n_patients <- c(50, 50, 50, 50) # number of patients in the group
+n_improved <- c(2, 13, 39, 48) # number of patients who showed signs of improvement
+
+covid_data <- data.frame(p_group, dose, n_patients, n_improved)
+rm(p_group, dose, n_patients, n_improved)
+
+# Calculate the proportion of patients who showed signs of improvement, and the log of dose
+covid_data <- covid_data %>% mutate(
+  percent_improved = n_improved / n_patients,
+  log_dose = log(dose)
+)
+
+n_obs <- length(covid_data$dose)
+n <- covid_data$n_patients
+y <- covid_data$n_improved
+x <- covid_data$dose
 
 x_new <- 1500
 
 task_h_data <- list('n_obs', 'n', 'y', 'x', 'x_new')
+
+
+# n_obs <- length(experiment_df$Dose)
+# n <- experiment_df$Patient_group
+# y <- experiment_df$Number_better
+# x <- experiment_df$Dose
+# 
+# x_new <- 1500
+# 
+# task_h_data <- list('n_obs', 'n', 'y', 'x', 'x_new')
 ```
 
-```{r [H] Creating the model}
+```{r}
 # Creating the model
 bayesian_binary_logistic_model <- function() {
   for (i in 1:n_obs) {
@@ -770,7 +794,7 @@ bayesian_binary_logistic_model <- function() {
 }
 ```
 
-```{r [H] Performing bayesian inference}
+```{r}
 # Performing bayesian inference
 bayesian_binary_logistic <- jags(data = task_h_data,
                                  parameters.to.save = c('beta_0', 'beta_1', 'p', 'p_new'),
@@ -784,18 +808,18 @@ print(bayesian_binary_logistic, intervals = c(0.025, 0.5, 0.975))
 
 We can see that zero does not appear within the credible intervals for $\beta_0$ and $\beta_1$, which indicates no posterior support at zero. This means that both parameters are useful in our model.
 
-```{r [H] Visualising model results - Preparation, echo = F}
+```{r, echo = F}
 bayesian_binary_logistic.mcmc <- as.mcmc(bayesian_binary_logistic)
 bayesian_binary_logistic.ggs <- ggs(bayesian_binary_logistic.mcmc)
 ```
 
-```{r [H] Visualising model results - Traceplots, echo = F}
+```{r, echo = F}
 ggs_traceplot(bayesian_binary_logistic.ggs)
 ```
 
 Traceplots show the history of parameters' values across iterations of the chain. The plot above shows that the average for all values appear to have converged as they follow a horizontal pattern - this suggests that they do not depend on their initial values. Those that seem more volatile, such as p[1] and p[2], are following a normal distribution.
 
-```{r [H] Visualising model results - Autocorrelation, echo = F}
+```{r, echo = F}
 ggs_autocorrelation(bayesian_binary_logistic.ggs)
 ```
 
@@ -803,13 +827,13 @@ Autocorrelation is a value between $-1$ and $1$, which measures how linearly dep
 
 At the zeroth lag, a value in the chain has perfect autocorrelation with itself. As we progress along the chain, the values become less correlated. This is further indication that the values have converged.
 
-```{r [H] Visualising model results - Densitiy plots for Beta_0 and Beta_1, echo = F}
+```{r, echo = F}
 ggs_density(bayesian_binary_logistic.ggs, family = '^beta')
 ```
 
 We can see that for both $\beta_0$ and $\beta_1$, all three chain values have converged with one another as the distributions mostly overlap one another.
 
-```{r [H] Visualising model results - Caterpillar plots for Beta_0 and Beta_1, echo = F}
+```{r, echo = F}
 ggs_caterpillar(bayesian_binary_logistic.ggs, family = '^beta_0') +
   geom_vline(xintercept = 0)
 ggs_caterpillar(bayesian_binary_logistic.ggs, family = '^beta_1') +
@@ -818,7 +842,7 @@ ggs_caterpillar(bayesian_binary_logistic.ggs, family = '^beta_1') +
 
 Caterpillar plots provide an insight into the distribution of parameter values. The dots represent median values, and the thick and thin lines represent the $90%$ and $95%$ of the highest posterior density regions, respectively. We can see that in both plots, there is no posterior support at zero.
 
-```{r [H] Visualising model results - Density and caterpillar plots for p Values, echo = F}
+```{r, echo = F}
 ggs_density(bayesian_binary_logistic.ggs, family = '^p') +
   geom_vline(xintercept = 0)
 ggs_caterpillar(bayesian_binary_logistic.ggs, family = '^p') +
@@ -832,7 +856,7 @@ As we saw in the plots for $\beta_0$ and $\beta_1$, all values shown here have c
 
 ### Compare the 95% confidence intervals of beta_0 and beta_1 obtained in part (c) using the frequentist logarithmic model, with the corresponding 95% credible intervals obtained in part (h) using the bayesian logarithmic model.
 
-```{r [I] Creating the frequentist model}
+```{r}
 # Creating the frequentist model
 m_log <- glm(cbind(n_improved,
                    n_patients - n_improved) ~ covid_data$log_dose,
@@ -840,12 +864,12 @@ m_log <- glm(cbind(n_improved,
              data = covid_data)
 ```
 
-```{r [I] Printing the 95% confidence intervals}
+```{r}
 # Print the 95% confidence intervals for beta_0 and beta_1
 confint(m_log)
 ```
 
-```{r [I] Printing the 95% credible intervals}
+```{r}
 # Print the 95% credible intervals
 bayesian_binary_logistic$BUGSoutput$summary[1:2, c('mean', '50%', '2.5%', '97.5%')]
 ```
@@ -859,7 +883,7 @@ Looking at the intervals for both models, we can see that they share similar res
 
 ### Include a graphical representation, together with the numerical values of the 95% credible intervals, and comment on your results.
 
-```{r [J] Preparing data, echo = F}
+```{r, echo = F}
 n_obs <- length(experiment_df$Dose)
 n <- experiment_df$Number_treated
 y <- experiment_df$Number_better
@@ -870,7 +894,7 @@ x_new <- c(550, 780, 1900)
 task_j_data <- list('n_obs', 'n', 'y', 'x', 'x_new')
 ```
 
-```{r [J] Creating the model}
+```{r}
 # Creating the model for prediction
 bayesian_binary_logistic_model_prediction <- function() {
   for (i in 1:n_obs) {
@@ -894,7 +918,7 @@ bayesian_binary_logistic_model_prediction <- function() {
 }
 ```
 
-```{r [J] Performing predictions}
+```{r}
 bayesian_binary_logistic_prediction <- jags(data = task_j_data,
                                             parameters.to.save = c('p_new'),
                                             n.iter = 10000,
@@ -902,12 +926,12 @@ bayesian_binary_logistic_prediction <- jags(data = task_j_data,
                                             model.file = bayesian_binary_logistic_model_prediction)
 ```
 
-```{r [J] Printing numerical results of the prediction}
+```{r}
 # Print numerical results of the prediction
 print(bayesian_binary_logistic_prediction, intervals = c(0.025, 0.5, 0.975))
 ```
 
-```{r [J] Visualising model results - Preparation, echo = F}
+```{r, echo = F}
 bayesian_binary_logistic_prediction.mcmc <- as.mcmc(bayesian_binary_logistic_prediction)
 bayesian_binary_logistic_prediction.ggs <- ggs(bayesian_binary_logistic_prediction.mcmc)
 ```
@@ -919,7 +943,7 @@ bayesian_binary_logistic_prediction.ggs <- ggs(bayesian_binary_logistic_predicti
 
 ### Use numerical and graphical representations of the posterior probabilities to discuss whether beta_2 is an appropriate term in the model.
 
-```{r [K] Preparing data, echo = F}
+```{r, echo = F}
 n_obs <- length(experiment_df$Dose)
 n <- experiment_df$Number_treated
 y <- experiment_df$Number_better
@@ -929,7 +953,7 @@ x_new <- 1500
 task_k_data <- list('n_obs', 'n', 'y', 'x', 'x_new')
 ```
 
-```{r [K] Creating the quadratic model}
+```{r}
 # Creating the quadratic model
 bayesian_binary_logistic_quadratic_model <- function() {
   for (i in 1:n_obs) {
@@ -953,7 +977,7 @@ bayesian_binary_logistic_quadratic_model <- function() {
 }
 ```
 
-```{r [K] Performing bayesian inference}
+```{r}
 # Performing bayesian inference
 bayesian_binary_logistic_quadratic <- jags(data = task_k_data,
                                            parameters.to.save = c('beta_0', 'beta_1', 'beta_2',
@@ -963,21 +987,21 @@ bayesian_binary_logistic_quadratic <- jags(data = task_k_data,
                                            model.file = bayesian_binary_logistic_quadratic_model)
 ```
 
-```{r [K] Printing numerical results of the quadratic model, echo = F}
+```{r, echo = F}
 # Print numerical results of the quadratic model
 print(bayesian_binary_logistic_quadratic, intervals = c(0.025, 0.5, 0.975))
 ```
 
 Looking at the credible intervals for $\beta_2$, we can see that zero IS found within. This is an indication that $\beta_2$ is not an appropriate term for our model.
 
-```{r [K] Printing numerical results of the logarithmic model, echo = F}
+```{r, echo = F}
 # Print numerical results of the non-quadratic model, created in task H
 print(bayesian_binary_logistic, intervals = c(0.025, 0.5, 0.975))
 ```
 
 The results above are from the simple logarithmic model from part (h). We can see that while the credible intervals for $\beta_0$ and $\beta_1$ include zero in the quadratic model, they do not here.
 
-```{r [K] Comparing the DIC (deviance information criterion) values of each model, echo = F}
+```{r, echo = F}
 # Comparing the DIC (deviance information criterion) values of each model
 bayesian_binary_logistic$BUGSoutput$DIC
 bayesian_binary_logistic_quadratic$BUGSoutput$DIC
@@ -985,13 +1009,13 @@ bayesian_binary_logistic_quadratic$BUGSoutput$DIC
 
 Based on the numerical results above, we can see that the simple model produces a lower DIC value than the quadratic model, which is more favorable. Note that as the values are so similar to one another, it is possible for an execution of this code to result in the quadratic model showing a lower DIC value. Multiple executions have shown that the simple logarithmic model generally produces the lower value.
 
-```{r [K] Visualising model results - Preparation, echo = F}
+```{r, echo = F}
 # Convert jags output to an MCMC object, then to a ggs object
 bayesian_binary_logistic_quadratic.mcmc <- as.mcmc(bayesian_binary_logistic_quadratic)
 bayesian_binary_logistic_quadratic.ggs <- ggs(bayesian_binary_logistic_quadratic.mcmc)
 ```
 
-```{r [K] Visualising model results - Density plots, echo = F}
+```{r, echo = F}
 # Density plots
 ggs_density(bayesian_binary_logistic_quadratic.ggs, family = '^beta') +
   geom_vline(xintercept = 0)
