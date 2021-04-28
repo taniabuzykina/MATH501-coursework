@@ -67,9 +67,9 @@ On the boxplot above we can observe that on average the customers that have swit
 **Conclusion**
 
 
-Out of the 4 factors, provided in the dataset, that can influence the 'churn' variable, time to load the webpage (which subsequently leads to the downlink speed) is the most important one. Average call waiting time for customer service doesn't differ drastically but still is higher for customers who chose different provider. Thus, we could conclude that this aspect also plays its part in the customers' decision along with the number of times the customer calls to the company. The most suspicious variable is the upload speed. For those clients who changed their providers, the uplink speed was actually higher but the downlink speed was lower (comparing to the customers who didn't change their provider) while normally the opposite should be the case (unless we're talking about 5G).
+Please refer to .rmd file to see other 2 boxplots. Out of the 4 factors, provided in the dataset, that can influence the 'churn' variable, time to load the webpage (which subsequently leads to the downlink speed) is the most important one. Average call waiting time for customer service doesn't differ drastically but still is higher for customers who chose different provider. Thus, we could conclude that this aspect also plays its part in the customers' decision along with the number of times the customer calls to the company. The most suspicious variable is the upload speed. For those clients who changed their providers, the uplink speed was actually higher but the downlink speed was lower (comparing to the customers who didn't change their provider) while normally the opposite should be the case (unless we're talking about 5G).
 
-Unfortunately, we don't have access to any other data, hence we can only speculate that perhaps there are some other issues with the provider's network. Please refere to .rmd file to see other 2 boxplots.
+Unfortunately, we don't have access to any other data, hence we can only speculate that perhaps there are some other issues with the provider's network. 
 
 
 ## **Part (b)**
