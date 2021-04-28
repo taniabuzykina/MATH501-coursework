@@ -126,7 +126,7 @@ ggs_caterpillar(bayesian_binary_logistic.ggs, family = '^p') +
   geom_vline(xintercept = 0)
 #
 # As we saw in the plots for beta_0 and beta_1, all values shown here have converged and show no indication of any posterior
-# support at zero. Furthermore, we can see that there is a positive correlation between the doseage and the likelihood of a
+# support at zero. Furthermore, we can see that there is a positive correlation between the dosage and the likelihood of a
 # patient showing signs of improvement.
 #
 
@@ -222,6 +222,10 @@ bayesian_binary_logistic_prediction.ggs <- ggs(bayesian_binary_logistic_predicti
 #
 #
 
+# Clean up
+rm(n, n_obs, x, x_new, y, task_j_data, bayesian_binary_logistic_prediction.ggs, bayesian_binary_logistic_prediction.mcmc,
+   bayesian_binary_logistic.ggs, bayesian_binary_logistic_model_prediction)
+
 # Task K --------------------------------------------------------------------------------------------------------------------
 
 # Consider the following quadratic bayesian model for the COVID-19 data and perform inference about its parameters, writing
@@ -229,7 +233,6 @@ bayesian_binary_logistic_prediction.ggs <- ggs(bayesian_binary_logistic_predicti
 #
 # Use numerical and graphical representations of the posterior probabilities to discuss whether beta_2 is an appropriate term
 # in the model.
-#
 
 # Preparing data
 n_obs <- length(covid_data$dose)
@@ -292,6 +295,11 @@ bayesian_binary_logistic_quadratic$BUGSoutput$DIC
 # the quadratic model. This appears to not be the case: while both DIC values are incredibly similar, the quadratic
 # model produces a slightly lower DIC value which is more favourable.
 #
+#
+# TODO - Variance in results for each execution. Majority of results show that the logarithmic model has a lower DIC
+# value than the quadratic
+#
+#
 
 # Visualising quadratic model results
 
@@ -310,9 +318,7 @@ ggs_density(bayesian_binary_logistic_quadratic.ggs, family = '^beta') +
 
 # Task L --------------------------------------------------------------------------------------------------------------------
 
-#
 # Which of the two bayesian models considered in parts H (the logarithmic) and K (the quadratic) do you prefer? Why?
-#
 
 #
 # Based on the results of parts H and K, the simple (logarithmic) model appears to be the best suited for the task of
