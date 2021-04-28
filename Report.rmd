@@ -1028,7 +1028,7 @@ bayesian_binary_logistic_quadratic.ggs <- ggs(bayesian_binary_logistic_quadratic
 
 The density plots illustrate the inclusion of zero within the credible intervals for all three unknown parameters in the quadratic model. Here we can more clearly see the posterior support for all unknown parameters, with significant posterior support for $\beta_2$.
 
-```{r, echo = F}
+```{r, echo = F, fig.height = 3}
 # Density plots
 ggs_density(bayesian_binary_logistic_quadratic.ggs, family = '^beta') +
   geom_vline(xintercept = 0)
