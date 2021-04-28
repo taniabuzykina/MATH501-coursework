@@ -66,7 +66,6 @@ On the boxplot above we can observe that on average the customers that have swit
 
 **Conclusion**
 
-
 Please refer to .rmd file to see other 2 boxplots. Out of the 4 factors, provided in the dataset, that can influence the 'churn' variable, time to load the webpage (which subsequently leads to the downlink speed) is the most important one. Average call waiting time for customer service doesn't differ drastically but still is higher for customers who chose different provider. Thus, we could conclude that this aspect also plays its part in the customers' decision along with the number of times the customer calls to the company. The most suspicious variable is the upload speed. For those clients who changed their providers, the uplink speed was actually higher but the downlink speed was lower (comparing to the customers who didn't change their provider) while normally the opposite should be the case (unless we're talking about 5G).
 
 Unfortunately, we don't have access to any other data, hence we can only speculate that perhaps there are some other issues with the provider's network. 
@@ -112,7 +111,7 @@ normalise <- function (inList){
 }
 ```
 
-Applying this function to each of the columns in our test and traininig sets:
+Applying this function to each of the columns in our test and training sets:
 ```{r}
 train.X <- apply(train.X, 2, normalise)
 test.X <- apply(test.X, 2, normalise)
@@ -187,7 +186,7 @@ sprintf("Expected error: %f Test error: %f", min(errors), error.KNN)
 
 ### *Alternative solution*
 
-Instead of writing a custom take on leave-one-out approach we can use knn.cv function. The issue is that this function doesn't take a test set of predictors as an argument so we can calculate error only on the original training set.
+Instead of writing a custom take on leave-one-out approach we can use knn.cv function. The issue is that this function doesn't take a test set of predictors as an argument, so we can only calculate the error on the original training set.
 ```{r}
 alt.KNN <- function(k){
                         res.knn.cv <- knn.cv(train.X, train.Y, k = 1)
@@ -203,13 +202,12 @@ errors2 <- rep(0, 30) #trying with K from 1 to 30
 for (j in 1:30) errors2[j] <- alt.KNN(j) # loop to find errors for K = 1:30
 optim.K2 <- which.min(errors2) # finding K with the smallest error
 ```
-
 We can see that in both cases optimal K=`r optim.K2`.
 
 ## **Part (d)**
 ### Using the training data set apply the random forest (bagging) method to construct a classifier to predict churn based on the four available predictors
 
-For random forest there's no need to use the created training set as it is due to the specifics of the function syntax (we just need to specify the training subset sequence, although optionally we can use the training subset itself). For us it is more convenient to work with dataframes so we will use the original churn_data.
+For random forest, there is no need to use the created training set, as it is due to the specifics of the function syntax. We only need to specify the training subset sequence, although optionally, we can use the training subset itself. For us, it is more convenient to work with dataframes, so we will use the original churn_data.
 ```{r}
 testing.X <- churn_data[-num_subset, ] %>% subset(select = -churn)
 testing.Y <- churn_data[-num_subset, ] %>% subset(select = churn)
@@ -226,16 +224,16 @@ random.tree <-
   randomForest(churn ~ ., data=churn_data, subset=num_subset, mtry=2, importance=TRUE)
 ```
 
-We could use a different notation and specify the training set directly in randomForest function but using our subset sequence instead will save  extra variables in global environment so we went for the option above.
+We could use a different notation and specify the training set directly in randomForest function, but using our subset sequence instead will save extra variables in the global environment, so we went for the option above.
 
 ### Using the obtained random forest, comment on the importance of the four variables for predicting churn
 
-Plotting mean decrease accuracy and mean decrease gini measures to identify the most important variables.
+Plotting Mean Decrease Accuracy (MDA) and Mean Decrease Gini (MDG) measures to identify the most important variables.
 ```{r, fig.height = 2.75}
 varImpPlot(random.tree, main = "Random Forest Variable Importance")
 ```
 
-The Mean Decrease Accuracy plot expresses how much accuracy the model losses by excluding each variable. The more the accuracy suffers, the more important the variable is for the successful classification. The mean decrease in Gini coefficient is a measure of how each variable contributes to the homogeneity of the nodes and leaves in the resulting random forest. The higher the value of mean decrease accuracy or mean decrease Gini score, the higher the importance of the variable in the model (Martinez-Taboada, F. & Redondo, J.I., 2020). In our case, both MeanDecreaseAccuracy and MeanDecreaseGini measures indicate that 'webget' is ultimately the most important variable. Followed by 'enqcount' (the number of customers enquiry calls to an operator) as the second most important predictor with the least important ones being 'callwait' followed by 'upload'. 
+The MDA plot expresses how much accuracy the model losses by excluding each variable. The more the accuracy suffers, the more important the variable is for the successful classification. The MDG coefficient is a measure of how each variable contributes to the homogeneity of the nodes and leaves in the resulting random forest. The higher the value of MDA or MDG score, the higher the importance of the variable in the model (Martinez-Taboada, F. & Redondo, J.I., 2020). In our case, both MeanDecreaseAccuracy and MDG measures indicate that 'webget' is ultimately the most important variable. Followed by 'enqcount' (the number of customers enquiry calls to an operator) as the second most important predictor with the least important ones being 'callwait' followed by 'upload'. 
 
 ### Calculate the test error for the obtained random forest
 
@@ -264,20 +262,20 @@ churn_predictors <- churn_data[ , c("upload", "webget","enqcount", "callwait")]
 ggpairs(churn_predictors)
 ```
 
-Overall the correlation between predictors is rather weak, 'upload', 'enqcount' and 'callwait' variables have high variation while in case of 'webget' most of the entries' values rise up to 600 units. The 'upload' and 'webget' variables have the biggest correlation coefficient 0.661. Since the number is closer to 1 we can assume that although weak there might be dependency between those 2 variables.
+Overall, the correlation between predictors is rather weak. The 'upload', 'enqcount' and 'callwait' variables have high variation, while in the case of 'webget', most of the entries' values rise up to 600 units. The 'upload' and 'webget' variables have the biggest correlation coefficient 0.661. Since the number is closer to 1, we can assume that, although weak, there might be dependency between those 2 variables.
 
 Performing the PCA.
 ```{r}
 churn_pca <- princomp(churn_predictors, cor = TRUE)
 summary(churn_pca)
 ```
-New variable Comp.1 holds 41.5% of variance in the data and has the deviation of `r as.numeric(churn_pca$sdev[1])`, which is the biggest spread of the data. Comp. 2 accounts for 31.9% of the information variance giving a cumulative percentage of 73.5%. The 2 components contain different information and created by using data from variables with certain weights.
+New variable Comp.1 holds 41.5% of variance in the data and has the deviation of `r as.numeric(churn_pca$sdev[1])`, which is the biggest spread of the data. Comp. 2 accounts for 31.9% of the information variance giving a cumulative percentage of 73.5%. The 2 components contain different information and are created by using data from variables with certain weights.
 
 ```{r, echo=FALSE}
 rm(churn_predictors) # cleaning up
 ```
 
-### Using principal components, create the “best” two dimensional view of the data set. In this visualisation, use colour coding to indiciate the churn. 
+### Using principal components, create the “best” two dimensional view of the data set. In this visualisation, use colour coding to indicate the churn. 
 
 Let's create a table of new predictors, convert it to a dataframe and add a 'churn' classifier column, this way it is more convenient to plot.
 ```{r}
@@ -286,7 +284,7 @@ new_churn <- data.frame(new_churn)
 new_churn <- new_churn %>% mutate(churn = churn_data$churn)
 ```
 
-In order to create a two-dimensional view of the data we'll use first 2 principal components and 'churn' variable to colour the points. 
+In order to create a two-dimensional view of the data, we'll use the first two principal components and the 'churn' variable to colour the points. 
 ```{r, fig.height=3}
 new_churn %>% ggplot(aes(x = Comp.1, y = Comp.2, color = churn)) +  geom_point() +
   labs(x="First Principal Component", y="Second Principal Component",
@@ -303,12 +301,12 @@ biplot(churn_pca, cex = c(0.5, 1),xlab = "Contribution to First Principal Compon
        ylab = "Contribution to Second Principal Component")
 ```
 
-Upload and webget predictors have positive contribution to first principal component. Therefore, the component focuses on a customer's Internet speed. Callwait and enqcount have negative contribution to second principal component and so we can conclude that this component focuses more on the customer support experience. 
+'Upload' and 'webget' predictors have positive contribution to the first principal component. Therefore, the component focuses on a customer's internet speed. 'Callwait' and 'enqcount' have negative contributions to the second principal component and so we can conclude that this component focuses more on the customer support experience. 
 
 ## Part (f)
 ### Apply the random forest (bagging) method to construct a classifier to predict churn based on the two first principal components as predictors. In doing so, use the split of the data into a training and test set (you may use the same indices as in part (b)). 
 
-Forming a new dataset from 2 principal components with 'churn' classifier and preparing the data before using it in our random forest model. Separating a test set.
+Forming a new dataset from the two principal components with the 'churn' classifier and preparing the data before using it in our random forest model. Separating a test set.
 
 ```{r}
 new_churn <- new_churn %>% subset(select = c(Comp.1, Comp.2, churn))
@@ -317,7 +315,7 @@ pca.test.Y <- churn_data[-num_subset, ] %>% subset(select = churn)
 pca.test.Y <- unlist(pca.test.Y)
 ```
 
-Training our random forest model. The mtry=1 as square root of 2 (number of predictors in our dataset) is approximately 1.4 hence closer to 1. 
+Training our random forest model. The mtry=1 as square root of 2 (number of predictors in our dataset) is approximately 1.4, hence closer to 1. 
 ```{r}
 pca.random.tree <- 
   randomForest(churn ~ ., data = new_churn, subset = num_subset, mtry = 1, importance = TRUE)
@@ -338,26 +336,28 @@ cat("KNN Error:", error.KNN)
 cat("RandomForest Error:", error.RandomForest) 
 cat("RandomForest PCA Error:", error.PCA.RandomForest)
 ```
-As we can see, the random forest model trained on the data formed from 2 new principal components predicts the 'churn' classifier with 10% bigger error. Our assumption is that this happens because the two components altogether hold only 3/4 of the data variation. Perhaps if we could train our model on all 4 components the results would have been better but then there was no sense in doing principal component analysis in the first place. Since principal component analysis is good for reducing dimensionality by identifying the most important predictors and those that could be got rid of we can logically expect that it will influence the resulting model test error, the question is whether this change was positive or negative. Based solely on the test error we can assume that discarding 2 other principal components wasn't a good idea. One more suggestion on why the PCA didn't work well here is mentioned in the conclusions. 
+As we can see, the random forest model trained on the data formed from the two new principal components predicts the 'churn' classifier with a 10% larger error. Our assumption is that this happens because the two components together hold only 3/4 of the data variation. Perhaps if we could train our model on all 4 components, the results would have been better but then there was no sense in doing principal component analysis in the first place. 
+
+Since principal component analysis is good for reducing dimensionality by identifying the most important predictors and removing non-important predictors, we can logically expect that it will influence the resulting model test error. The question is whether this change was positive or negative. Based solely on the test error, we can assume that discarding two other principal components was not a good idea. One more suggestion on why the PCA didn't work well here is mentioned in the conclusions. 
 
 ### Visualise the resulting classification rule on the scatter plot of the two first principal components.
 
-Visalising the resulting predicted classifiers with two principal components on the scatter plot. 
+Visualising the resulting predicted classifiers with two principal components on the scatter plot. 
 ```{r, fig.height=3}
 pca.test.X %>% ggplot(aes(x=Comp.1,y=Comp.2,color=pca.rf.predict))+ geom_point()+
   labs(x="Principal Component 1",y="Principal Component 2",
        color="Predicted 'churn' classifier") + coord_fixed(ratio = 1)
 ```
 
-We can observe that most of the customers who have decided to switch to a different operator have positive values of principal component 1 which focuses on Internet speed factors like 'upload' and 'webget'.
+We can observe that most of the customers who have decided to switch to a different operator have positive values of Principal Component 1 which focuses on internet speed factors like 'upload' and 'webget'.
 
 ## Conclusions and issues with the dataset
 
-The data used in this section was flawed to begin with but not in terms of scale or missing values or even sparsity of the data. The problem lies in the meaning behind the predictors. We'd say that there's nothing wrong with Principal Component 2: both enqcount and callwait predictors (that contribute to this component) indicate the customer service quality. The bigger their values are, the more negative experience a customer has because no one wants to call to their operator with inquiries often or wait on the line for too long before a support agent answers them. 
+The data used in this section was flawed to begin with but not in terms of scale or missing values or even sparsity of the data. The problem lies in the meaning behind the predictors. We would say that there is nothing wrong with Principal Component 2: both 'enqcount' and 'callwait' predictors (that contribute to this component) indicate the customer service quality. The bigger their values are, the more negative experience a customer has because no one wants to call to their operator with inquiries often or wait on the line for too long before a support agent answers them. 
 
-However, taking a closer look at the Principal Component 1 together with upload and webget predictors, we see that webget indicates the time which it takes for a client to load a webpage, which directly means a downlink speed. The bigger the 'webget' value is, the lower the downlink speed is. Thus, higher webget values should logically carry a negative meaning. Now, upload predictor is easier - we have a classic, 'the more the better' here since it indicates the uplink speed directly. However, both of those predictors contribute to Principal Component 1 positively, which creates a contradiction. Normally you would want the 'webget' to have a negative contribution because the smaller this value is, the better internet speed a customer has (basically the same case with enqcount and callwait for Principal Component 2).  
+However, taking a closer look at the Principal Component 1 together with 'upload' and 'webget' predictors, we see that 'webget' indicates the time which it takes for a client to load a webpage, in other words downlink or download speed. The bigger the 'webget' value is, the lower the downlink speed is. Thus, higher 'webget' values should logically carry a negative meaning. Now the 'upload' predictor is easier to interpret, we have a 'the more the better' situation here, since it indicates the uplink speed directly. However, both of those predictors contribute to Principal Component 1 positively, which creates a contradiction. Normally, you would want the 'webget' to have a negative contribution because the smaller this value is, the better internet speed a customer has (basically the same case with 'enqcount' and 'callwait' for Principal Component 2).  
 
-We can't blame the PCA function here. We can only blame the nature of the provided data because it is as confusing as it can be. Instead, it would be better to have the 'webget' predictor converted to the same unit as 'upload' predictor. Unfortunately, the units of the predictors were not provided which hopefully didn't influence our machine learning models, but is crucial for understanding the data and any data scientists should understand the data before actually working with it. Despite that, working with this dataset was a great learning experience. 
+We can't blame the PCA function here. We can only blame the nature of the provided data because it is as confusing as it can be. Instead, it would be better to have the 'webget' predictor converted to the same unit as 'upload' predictor. Unfortunately, the units of the predictors were not provided which hopefully has not influenced our machine learning models, but are crucial for understanding the data and any data scientists should understand the data before actually working with it. Despite that, working with this dataset was a great learning experience. 
 
 
 # Statistical Modelling
@@ -401,9 +401,9 @@ Plot_A
 
 A dose of 500mg/ml or less has no real impact on the proportion of patients who get better (less than 4%). There is a reasonable increase at around the 750mg/ml as it reaches over 20% of the patients getting better. However, the best increase is when the dose is increased to 1000mg/ml with nearly 80% of patients getting better. 
 
-To increase the proportion of patients to just under 100%, it appears that the dose needs to be more than double to above 2000mg/ml. This is comparable with the current COVID vacinations, which see a large increase from the first dose and almost complete immunity with a second dose.
+To increase the proportion of patients to just under 100%, it appears that the dose needs to be more than double to above 2000mg/ml. This is comparable with the current COVID vaccinations, which sees a large increase from the first dose and almost complete immunity with a second dose.
 
-With this graph we can also conclude that improving recovery from 80% to near 100% would require twice the does and most likely then, twice the cost. The cost analysis would therefore become important in determining the dose to provide beyond the 1000mg/ml. 
+With this graph, we can also conclude that improving recovery from 80% to near 100% would require twice the dosage and most likely then, twice the cost. The cost analysis would therefore become important in determining the dosage to provide beyond 1000mg/ml. 
 
 ## Part (b)
 ### Fit the model in the frequentist framework and report $\hat{\beta}_{0}$ (intercept) and $\hat{\beta}_{1}$ (Dose(x))
@@ -447,11 +447,11 @@ grid.arrange(Plot_A, Plot_C, ncol = 2)
 
 ### What do you conclude? 
 
-Plot A allows us to see the actual dose that relates to each point easily in terms that we understand. Plot C is confusing as we are unable, at a glance, to determine what dose leads to what percentage of patients getting better. 
+Plot A allows us to see the actual dose that relates to each point easily in terms that we understand (mg/ml). Plot C is confusing as we are unable, at a glance, to determine what dosage leads to which percentage of patients getting better. 
 
-However, Plot C does help to spread the points across the graph, which would be more useful if we had a lot of data points to show. With the current dataset, this isn't really being seen to help and so Plot A would be an easier graph to show to people as most would understand the axis descriptions and meanings. 
+However, Plot C does help to spread the points across the graph, which would be more useful if we had a lot of data points to show. With the current dataset, this is not really helping and so Plot A would be an easier graph to show to people, as most would understand the axes descriptions and meanings. 
 
-Overall, we can start to see the curve of improvement as dose increase from the graphs and more so in Plot C. 
+Overall, we can start to visualise the curve of patient improvement as dosage increases from the graphs and more so in Plot C. 
 
 ### Fit the logarithmic model in the frequentist framework, report beta_0_hat and beta_1_hat
 ```{r}
@@ -467,7 +467,7 @@ confint(m_log) #Confidence intervals for beta_0 and beta_1
 ```
 
 ### Which of the two frequentist models considered in parts (b) and (c) (the standard or the logarithmic model) do you prefer? Why?
-Due to the size of the data set it is difficult to see any difference in the graph as using a log in this case would help with data being compacted and needing to be scaled out in magnitude. As such there is no real benefit to this model. This model does however produce a more confusing graph as the x-axis is in units of Log of Dose which is more confusing that just the standard in graph a of dose as mg/ml. Graph a will be easier to read by many medical professionals as well as general people due to the accessibility of this label. In a time of over whelming data accessibility is key to helping people understand data and provide information.
+Due to the size of the data set, it is difficult to see any difference in the graph as using a log in this case would help with data being compacted and needing to be scaled out in magnitude. As such there is no real benefit to this model. This model does however produce a more confusing graph as the x-axis is in units of Log of Dose which is more confusing that just the standard in graph a of dose as mg/ml. Plot A will be easier to read by medical professionals, as well as general people, due to the accessibility of this label. In a time of overwhelming data, accessibility is key to helping people understand data and provide information (Amplitude, 2021).
 
 ## Part (d)
 
@@ -494,7 +494,7 @@ data.frame(exp(Dose_new), p_estimate_ci_indirect)
 
 ### What can you conclude from these results?
 
-As the dose increases, the probability of the patient getting better increases.
+As the dosage increases, the probability of the patient getting better increases.
 
 ### Compare the predictions and confidence intervals obtained using both the indirect and direct methods.
 
@@ -514,7 +514,7 @@ data.frame(exp(Dose_new), p_estimate_ci_direct)
 
 ### Which one of the two methods is generally recommended? Why?
 
-It is generally recommended to use the indirect method as it provides more accurate results more regularly than the direct method. This is not evident in the currnet data set, but this is most likely due to its small size.
+It is generally recommended to use the indirect method as it provides more accurate results more regularly than the direct method. This is not evident in the current data set, but this is most likely due to its small size.
 
 ## Part (e)
 
@@ -602,7 +602,7 @@ p_value <- pchisq(deviance(m_log),df.residual(m_log),lower = FALSE)
 p_value
 ```
 
-P-value is less than 0.05 and thus the null hypothesis is rejected signifiying that this model is not an adequete fit to the data or in other words is not useful.
+P-value is less than 0.05 and thus the null hypothesis is rejected, signifying that this model is not an adequate fit to the data or in other words is not useful.
 
 
 ## Part (f)
@@ -639,7 +639,7 @@ p_value <- pchisq(deviance(m_log_log2),df.residual(m_log_log2),lower = FALSE)
 p_value
 ```
 
-P-value is less than 0.05 and thus the null hypothesis is rejected signifiying that this model is not an adequete fit to the data or in other words is not useful.
+P-value is less than 0.05 and thus the null hypothesis is rejected, signifying that this model is not an adequate fit to the data or in other words is not useful.
 
 ### In addition, report the 95% confidence interval for beta_2. Does this result confirm the conclusion of the hypothesis test?
 ```{r, message = F}
@@ -662,7 +662,7 @@ Deviance_f_log_log2
 Deviance_c_log - Deviance_f_log_log2
 ```
 
-The difference between Model C Deviance and Model F Deviance is positive and so we can conclude that it is adequete. 
+The difference between Model C Deviance and Model F Deviance is positive, so we can conclude that it is adequate. 
 
 ### Compare the models
 
@@ -674,12 +674,12 @@ Alternative hypothesis - $H_{1}$: Model C is not adequate compared to Model F
 AnovaTest <- anova(m_log, m_log_log2, test = "Chisq")
 AnovaTest[2,5]
 ```
-Here, there p-value is `r round(AnovaTest[2,5], digits=2)`. As this is greater than 0.05, we do not reject the null hypothesis and so Model C is adequate compared to Model F. In other words $\beta_{2} = 0$. Thus, Model C is preferred over Model F.
+Here, the p-value is `r round(AnovaTest[2,5], digits=2)`. As this is greater than 0.05, we do not reject the null hypothesis and so Model C is adequate compared to Model F. In other words $\beta_{2} = 0$. Thus, Model C is preferred over Model F.
 
 
 ## Part (h)
 
-### Write jags/BUGS code to perform inference about the following related bayesian binary logistic regression model. Run your code. Include a graphical representation of the traceplots and posterior densities of $\beta_0$ and $\beta_1$ in your report and discuss your results.
+### Write jags/BUGS code to perform inference about the following related Bayesian binary logistic regression model. Run your code. Include a graphical representation of the traceplots and posterior densities of $\beta_0$ and $\beta_1$ in your report and discuss your results.
 
 ```{r, echo = F}
 p_group <- 1:4 # patient group
@@ -721,7 +721,7 @@ bayesian_binary_logistic_model <- function() {
   p_new <- exp(eta_new) / (1 + exp(eta_new))
 }
 
-# Performing bayesian inference
+# Performing Bayesian inference
 bayesian_binary_logistic <- 
   jags(data = task_h_data,parameters.to.save = c('beta_0', 'beta_1', 'p', 'p_new'),
         n.iter = 100000,n.chains = 3,model.file = bayesian_binary_logistic_model)
@@ -811,12 +811,12 @@ confint(m_log)
 bayesian_binary_logistic$BUGSoutput$summary[1:2, c('mean', '50%', '2.5%', '97.5%')]
 ```
 
-Looking at the intervals for both models, we can see that they share similar results. This is because the prior distributions for the unknown values ($\beta_0$ and $\beta_1$) were flat. Using flat or vague priors results in the bayesian approach being based on the likelihood function, which is incredibly similar to the frequentist approach.
+Looking at the intervals for both models, we can see that they share similar results. This is because the prior distributions for the unknown values ($\beta_0$ and $\beta_1$) were flat. Using flat or vague priors results in the Bayesian approach being based on the likelihood function, which is incredibly similar to the frequentist approach.
 
 
 ## Part (j)
 
-### Using the bayesian logarithmic model implemented in part (h), estimate approximate 95% credible intervals for the probability that COVID-19 patients who receive doses of 550, 780, and 1900 mg/mL of the medicine show signs of improvement.
+### Using the Bayesian logarithmic model implemented in part (h), estimate approximate 95% credible intervals for the probability that COVID-19 patients who receive doses of 550, 780, and 1900 mg/mL of the medicine show signs of improvement.
 
 ### Include a graphical representation, together with the numerical values of the 95% credible intervals, and comment on your results.
 
@@ -876,7 +876,7 @@ bayesian_binary_logistic_prediction.ggs <- ggs(bayesian_binary_logistic_predicti
 ggs_density(bayesian_binary_logistic_prediction.ggs, family = '^p')
 ```
 
-The numerical and graphical results of the prediction model _(above)_ follow the expected trend of: an increase in dose results in a higher likelihood of a patient showing signs of improvement. Note that the chain values in the density plot for p_new[1] have a slight variance. This may be an indication that the values have have not properly converged, however they still largely overlap one another - the variation is minimal.
+The numerical and graphical results of the prediction model _(above)_ follow the expected trend of: an increase in dose results in a higher likelihood of a patient showing signs of improvement. Note that the chain values in the density plot for p_new[1] have a slight variance. This may be an indication that the values have not properly converged, however, they still largely overlap one another - the variation is minimal.
 
 
 ## Task (k)
@@ -913,7 +913,7 @@ b_binary_logistic_quadratic_model <- function() {
   p_new <- exp(eta_new) / (1 + exp(eta_new))
 }
 
-# Performing bayesian inference
+# Performing Bayesian inference
 bayesian_binary_logistic_quadratic <- 
     jags(data = task_k_data,
         parameters.to.save = c('beta_0', 'beta_1', 'beta_2', 'p', 'p_new'),
@@ -964,7 +964,7 @@ ggs_density(bayesian_binary_logistic_quadratic.ggs, family = '^beta') +
 
 ## Task (l)
 
-### Which of the two bayesian models considered in part (h), the logarithmic model, and (k), the quadratic model, do you prefer? Why?
+### Which of the two Bayesian models considered in part (h), the logarithmic model, and (k), the quadratic model, do you prefer? Why?
 
 Based on the results of part (h) and (k), the simple _(logarithmic)_ model appears to be the best suited for the task of predicting the effectiveness of different dosages of medicine, given the provided data.
 
@@ -974,5 +974,7 @@ Furthermore, the simple model produces a lower DIC value than the quadratic mode
 
 
 # References
+
+[(Amplitude, 2021) The Guide to Data Accessibility](https://amplitude.com/data-accessibility) Accessed: 10 April 2021
 
 [(Martinez-Taboada, F. & Redondo, J.I., 2020) Variable importance plot (mean decrease accuracy and mean decrease Gini)](https://doi.org/10.1371/journal.pone.0230799.g002) Accessed: 26 April 2021
