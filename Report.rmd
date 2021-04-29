@@ -368,10 +368,10 @@ xygrid.predict %>% ggplot(aes(x = Comp.1, y = Comp.2, color = col)) +
   coord_fixed(ratio = 1) + 
   labs(x = "Principal Component 1", y = "Principal Component 2",
        color = "Churn") +
-  scale_color_manual(labels = c("Yes", "No"))
+  scale_color_manual(labels = c("Yes", "No"), values = c("green", "red"))
 ```
 
-We can observe that most of the customers who have decided to switch to a different operator have positive values of Principal Component 1 which focuses on internet speed factors like 'upload' and 'webget'.
+We can observe that most of the customers who have decided to switch to a different operator have values higher than 1.25 of Principal Component 1 which focuses on internet speed factors like 'upload' and 'webget'.
 
 ## Conclusions and issues with the dataset
 
