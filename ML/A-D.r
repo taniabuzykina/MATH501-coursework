@@ -373,8 +373,29 @@ error.PCA.RandomForest
 # Visualise the resulting classification rule on the scatter plot of the two 
 # first principal components.
 #****
+#*
+#*
 
-pca.test.X %>% ggplot(aes(x = Comp.1, y = Comp.2, color = pca.rf.predict)) +
+#creating a grid from our data to plot predictions
+xygrid.predict <- expand.grid(Comp.1 = pca.test.X$Comp.1, Comp.2 = pca.test.X$Comp.1)
+
+# constructing a classifier using random forest model
+xygrid.class <- predict(pca.random.tree, xygrid.predict, type = "class")
+
+
+col <- rep("grey", length(xygrid.class)) 
+
+for (i in 1:length(xygrid.class)){
+  if (xygrid.class[i] == 'yes') 
+    {
+    col[i] = "green"
+  } else 
+  {
+        col[i] = "red"
+        }
+}
+
+xygrid.predict %>% ggplot(aes(x = Comp.1, y = Comp.2, color = col)) +
   geom_point() +
   coord_fixed(ratio = 1) + 
   labs(x = "Principal Component 1", y = "Principal Component 2",

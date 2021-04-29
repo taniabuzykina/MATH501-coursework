@@ -344,9 +344,30 @@ As we can see, the random forest model trained on the data formed from 2 new pri
 
 Visalising the resulting predicted classifiers with two principal components on the scatter plot. 
 ```{r, fig.height=3}
-pca.test.X %>% ggplot(aes(x=Comp.1,y=Comp.2,color=pca.rf.predict))+ geom_point()+
-  labs(x="Principal Component 1",y="Principal Component 2",
-       color="Predicted 'churn' classifier") + coord_fixed(ratio = 1)
+#creating a grid from our data to plot predictions
+xygrid.predict <- expand.grid(Comp.1 = pca.test.X$Comp.1, Comp.2 = pca.test.X$Comp.1)
+
+# constructing a classifier using random forest model
+xygrid.class <- predict(pca.random.tree, xygrid.predict, type = "class")
+
+
+col <- rep("grey", length(xygrid.class)) 
+
+for (i in 1:length(xygrid.class)){
+  if (xygrid.class[i] == 'yes') 
+    {
+    col[i] = "green"
+  } else 
+  {
+        col[i] = "red"
+        }
+}
+
+xygrid.predict %>% ggplot(aes(x = Comp.1, y = Comp.2, color = col)) +
+  geom_point() +
+  coord_fixed(ratio = 1) + 
+  labs(x = "Principal Component 1", y = "Principal Component 2",
+       color = "Churn")
 ```
 
 We can observe that most of the customers who have decided to switch to a different operator have positive values of principal component 1 which focuses on Internet speed factors like 'upload' and 'webget'.
