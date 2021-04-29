@@ -354,12 +354,9 @@ xygrid.class <- predict(pca.random.tree, xygrid.predict, type = "class")
 col <- rep("grey", length(xygrid.class)) 
 for (i in 1:length(xygrid.class)){
   if (xygrid.class[i] == 'yes')
-  {
-    col[i] = "green"
-  } else
-  {
-    col[i] = "red"
-  }
+  {col[i] = "green"} 
+  else
+  {col[i] = "red"}
 }
 
 xygrid.predict %>% ggplot(aes(x = Comp.1, y = Comp.2, color = col)) + geom_point() +
