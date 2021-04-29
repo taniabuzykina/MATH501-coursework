@@ -467,7 +467,7 @@ confint(m_log) #Confidence intervals for beta_0 and beta_1
 ```
 
 ### Which of the two frequentist models considered in parts (b) and (c) (the standard or the logarithmic model) do you prefer? Why?
-Due to the size of the data set, it is difficult to see any difference in the graph as using a log in this case would help with data being compacted and needing to be scaled out in magnitude. As such there is no real benefit to this model. This model does however produce a more confusing graph as the x-axis is in units of Log of Dose which is more confusing that just the standard in graph a of dose as mg/ml. Plot A will be easier to read by medical professionals, as well as general people, due to the accessibility of this label. In a time of overwhelming data, accessibility is key to helping people understand data and provide information (Amplitude, 2021).
+Due to the size of the data set, it is difficult to see any difference in the graph as using a log in this case would help with data being compacted and needing to be scaled out in magnitude. As such there is no real benefit to this model. This model does however produce a more confusing graph as the x-axis is in units of Log of Dose which is more confusing that just the standard in graph a of dose as mg/ml. Plot A will be easier to read by medical professionals, as well as general people, due to the accessibility of this label. In a time of overwhelming data, accessibility is key to helping people understand data and provide information.
 
 ## Part (d)
 
@@ -587,15 +587,9 @@ grid.arrange(Plot_A_Alt, Plot_E, ncol = 2)
 
 ### In addition, perform a suitable statistical test to check whether the logarithmic model is adequate. State your hypotheses and conclusions carefully.
 
-Null hypothesis - $H_{0}$: Model C provides an adequate fit to the data
+Null hypothesis - $H_{0}$: Model C provides an adequate fit to the data. (The model as it stands is useful)
 
-Alternative hypothesis - $H_{1}$: Model C does not provide an adequate fit to the data.
-
-or
-
-Null hypothesis - $H_{0}$: The model as it stands is useful.
-
-Alternative hypothesis - $H_{1}$: The model as it stands is NOT useful.
+Alternative hypothesis - $H_{1}$: Model C does not provide an adequate fit to the data. (The model as it stands is NOT useful)
 
 ```{r}
 p_value <- pchisq(deviance(m_log),df.residual(m_log),lower = FALSE)
@@ -624,15 +618,9 @@ beta_2_hat <- coef(m_log_log2)[3]
 
 ### Perform a frequentist hypothesis test of size 0.05 of whether $\beta_{2}$ is statistically significant and report your conclusion with justification. State your hypotheses and conclusions carefully.
 
-Null hypothesis - $H_{0}$: Model F provides an adequate fit to the data
+Null hypothesis - $H_{0}$: Model F provides an adequate fit to the data. (The model as it stands is useful)
 
-Alternative hypothesis - $H_{1}$: Model F does not provide an adequate fit to the data.
-
-or
-
-Null hypothesis - $H_{0}$: The model as it stands is useful.
-
-Alternative hypothesis - $H_{1}$: The model as it stands is NOT useful.
+Alternative hypothesis - $H_{1}$: Model F does not provide an adequate fit to the data. (The model as it stands is NOT useful)
 
 ```{r}
 p_value <- pchisq(deviance(m_log_log2),df.residual(m_log_log2),lower = FALSE)
@@ -974,7 +962,5 @@ Furthermore, the simple model produces a lower DIC value than the quadratic mode
 
 
 # References
-
-[(Amplitude, 2021) The Guide to Data Accessibility](https://amplitude.com/data-accessibility) Accessed: 10 April 2021
 
 [(Martinez-Taboada, F. & Redondo, J.I., 2020) Variable importance plot (mean decrease accuracy and mean decrease Gini)](https://doi.org/10.1371/journal.pone.0230799.g002) Accessed: 26 April 2021
