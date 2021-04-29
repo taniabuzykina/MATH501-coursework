@@ -288,7 +288,7 @@ In order to create a two-dimensional view of the data, we'll use the first two p
 ```{r, fig.height=3}
 new_churn %>% ggplot(aes(x = Comp.1, y = Comp.2, color = churn)) +  geom_point() +
   labs(x="First Principal Component", y="Second Principal Component",
-       color="Switched to a new operator") +  coord_fixed(ratio = 1) 
+       color="Switched to a new operator") + coord_fixed(ratio = 1) 
 ```
 
 ### How much of the variation or information in the data is preserved in this plot? Provide an interpretation of the first two principal components.
@@ -346,28 +346,20 @@ Visualising the resulting predicted classifiers with two principal components on
 ```{r, fig.height=3}
 #creating a grid from our data to plot predictions
 xygrid.predict <- expand.grid(Comp.1 = pca.test.X$Comp.1, Comp.2 = pca.test.X$Comp.1)
-
 # constructing a classifier using random forest model
 xygrid.class <- predict(pca.random.tree, xygrid.predict, type = "class")
-
 
 col <- rep("grey", length(xygrid.class)) 
 
 for (i in 1:length(xygrid.class)){
   if (xygrid.class[i] == 'yes') 
-    {
-    col[i] = "green"
-  } else 
-  {
-        col[i] = "red"
-        }
+     {col[i] = "green"} 
+  else{col[i] = "red"}
 }
 
-xygrid.predict %>% ggplot(aes(x = Comp.1, y = Comp.2, color = col)) +
-  geom_point() +
+xygrid.predict %>% ggplot(aes(x = Comp.1, y = Comp.2, color = col)) + geom_point() +
   coord_fixed(ratio = 1) + 
-  labs(x = "Principal Component 1", y = "Principal Component 2",
-       color = "Churn") +
+  labs(x = "Principal Component 1", y = "Principal Component 2",color="Churn") +
   scale_color_manual(labels = c("Yes", "No"), values = c("green", "red"))
 ```
 
