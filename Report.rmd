@@ -344,15 +344,16 @@ Since principal component analysis is good for reducing dimensionality by identi
 
 Visualising the resulting predicted classifiers with two principal components on the scatter plot. 
 ```{r, fig.height=3}
-#creating a grid from our data to plot predictions
-xygrid.predict <- expand.grid(Comp.1 = pca.test.X$Comp.1, Comp.2 = pca.test.X$Comp.1)
+
+len <- length(pca.test.Y)
+# creating a base grid to plot predictions
+xgrid <- seq(-3,5, length.out = 40)
+ygrid <- seq(-3,5, length.out = 40)
+xygrid.predict <- expand.grid(Comp.1 = xgrid, Comp.2 = ygrid)
 
 # constructing a classifier using random forest model
 xygrid.class <- predict(pca.random.tree, xygrid.predict, type = "class")
-
-
 col <- rep("grey", length(xygrid.class)) 
-
 for (i in 1:length(xygrid.class)){
   if (xygrid.class[i] == 'yes') 
     {
@@ -368,10 +369,10 @@ xygrid.predict %>% ggplot(aes(x = Comp.1, y = Comp.2, color = col)) +
   coord_fixed(ratio = 1) + 
   labs(x = "Principal Component 1", y = "Principal Component 2",
        color = "Churn") +
-  scale_color_manual(labels = c("Yes", "No"), values = c("green", "red"))
+  scale_color_manual(labels = c("Yes", "No"), values = c("tomato2", "cyan3"))
 ```
 
-We can observe that most of the customers who have decided to switch to a different operator have values higher than 1.25 of Principal Component 1 which focuses on internet speed factors like 'upload' and 'webget'.
+We can observe that most of the customers who have decided to switch to a different operator have values higher than around 1 of Principal Component 1 which focuses on internet speed factors like 'upload' and 'webget'.
 
 ## Conclusions and issues with the dataset
 
